@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     action?: "fork" | "star" | "unstar"
     owner?: string
     repo?: string
+    forkName?: string
   }
 
   if (!body.owner || !body.repo || !body.action) {
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
       ? await starGitHubRepository(sessionUser, body.owner, body.repo)
       : body.action === "unstar"
         ? await unstarGitHubRepository(sessionUser, body.owner, body.repo)
-        : await forkGitHubRepository(sessionUser, body.owner, body.repo)
+        : await forkGitHubRepository(sessionUser, body.owner, body.repo, body.forkName)
 
   if (result.error) {
     return NextResponse.json(

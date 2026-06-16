@@ -801,7 +801,8 @@ export async function unstarGitHubRepository(
 export async function forkGitHubRepository(
   sessionUser: SessionUser | null,
   owner: string,
-  repo: string
+  repo: string,
+  forkName?: string
 ) {
   if (!sessionUser?.accessToken) {
     return { error: "unauthorized" as const, status: 401 }
@@ -812,6 +813,7 @@ export async function forkGitHubRepository(
     {
       headers: getHeaders(sessionUser.accessToken),
       method: "POST",
+      body: forkName ? JSON.stringify({ name: forkName }) : undefined,
     }
   )
 

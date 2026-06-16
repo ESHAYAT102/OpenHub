@@ -5,6 +5,15 @@ import { GitFork, Star } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 
 type RepositoryEngagementActionsProps = {
   canFork?: boolean
@@ -28,6 +37,8 @@ export default function RepositoryEngagementActions({
   const [forkCount, setForkCount] = useState(initialForkCount)
   const [isTogglingStar, setIsTogglingStar] = useState(false)
   const [isForking, setIsForking] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [forkName, setForkName] = useState(repo)
 
   const handleStarToggle = async () => {
     if (isTogglingStar) return
@@ -64,16 +75,23 @@ export default function RepositoryEngagementActions({
     setIsTogglingStar(false)
   }
 
-  const handleFork = async () => {
+  const handleFork = () => {
+    setForkName(repo)
+    setIsDialogOpen(true)
+  }
+
+  const handleForkSubmit = async () => {
     if (isForking) return
 
     setIsForking(true)
+    setIsDialogOpen(false)
 
     const response = await fetch("/api/repository-actions", {
       body: JSON.stringify({
         action: "fork",
         owner,
         repo,
+        forkName,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -92,33 +110,65 @@ export default function RepositoryEngagementActions({
   }
 
   return (
-    <div className="grid w-full grid-cols-1 gap-2 min-[440px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
-      <Button
-        type="button"
-        variant={isStarred ? "secondary" : "outline"}
-        className="w-full rounded-xl sm:w-auto"
-        onClick={handleStarToggle}
-        data-repo-action-star
-      >
-        <Star className={isStarred ? "fill-current" : undefined} />
-        Star
-        <span className="text-muted-foreground">{starCount}</span>
-      </Button>
-
-      {canFork ? (
+    <>
+      <div className="grid w-full grid-cols-1 gap-2 min-[440px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
         <Button
           type="button"
-          variant="outline"
+          variant={isStarred ? "secondary" : "outline"}
           className="w-full rounded-xl sm:w-auto"
-          disabled={isForking}
-          onClick={handleFork}
-          data-repo-action-fork
+          onClick={handleStarToggle}
+          data-repo-action-star
         >
-          <GitFork />
-          Fork
-          <span className="text-muted-foreground">{forkCount}</span>
+          <Star className={isStarred ? "fill-current" : undefined} />
+          Star
+          <span className="text-muted-foreground">{starCount}</span>
         </Button>
-      ) : null}
-    </div>
+
+        {canFork ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full rounded-xl sm:w-auto"
+            disabled={isForking}
+            onClick={handleFork}
+            data-repo-action-fork
+          >
+            <GitFork />
+            Fork
+            <span className="text-muted-foreground">{forkCount}</span>
+          </Button>
+        ) : null}
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Fork repository</DialogTitle>
+            <DialogDescription>
+              Enter a name for the forked repository.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={forkName}
+            onChange={(e) => setForkName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleForkSubmit()
+              }
+            }}
+            placeholder="Repository name"
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleForkSubmit} disabled={!forkName.trim()}>
+              Fork
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
