@@ -780,6 +780,31 @@
   --sidebar-ring: #c4a7e7;
 }
 
+:root,
+.dark,
+.catppuccin-latte,
+.catppuccin-mocha,
+.dracula-light,
+.dracula-dark,
+.tokyo-night-day,
+.tokyo-night-night,
+.everforest-light,
+.everforest-dark,
+.gruvbox-light,
+.gruvbox-dark,
+.flexoki-light,
+.flexoki-dark,
+.nord-light,
+.nord-dark,
+.osaka-jade-light,
+.osaka-jade-dark,
+.rose-pine-dawn,
+.rose-pine-main,
+.rose-pine-moon {
+    --selection-background: color-mix(in oklab, var(--primary) 75%, transparent);
+    --selection-foreground: var(--primary-foreground);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -930,4 +955,28 @@
   )
   ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.705 0.015 286.067);
+}
+
+::selection {
+    background: var(--selection-background);
+    color: var(--selection-foreground);
+}
+::-moz-selection {
+    background: var(--selection-background);
+    color: var(--selection-foreground);
+}
+
+body, main, article, section, div, p, span, a,
+h1, h2, h3, h4, h5, h6, li, td, th, blockquote,
+pre, code {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+button, [role="button"], [role="menuitem"], [role="option"],
+[data-slot="dropdown-menu-item"], [data-slot="context-menu-item"],
+[data-slot="select-item"], [data-slot="scroll-area-scrollbar"],
+svg, img {
+    -webkit-user-select: none;
+    user-select: none;
 }

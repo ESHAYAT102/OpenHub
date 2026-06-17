@@ -55,11 +55,6 @@ import {
   getGitHubRepositoryPullRequestCount,
   getGitHubRepositoryReleases,
   isGitHubRepositoryStarred,
-  type GitHubRepositoryCommit,
-  type GitHubRepositoryDiscussion,
-  type GitHubRepositoryIssue,
-  type GitHubRepositoryPullRequest,
-  type GitHubRepositoryRelease,
 } from "@/lib/github"
 import { getSessionUser } from "@/lib/session"
 
@@ -306,69 +301,34 @@ export default async function RepositoryPage({
             : "code"
     : "code"
 
-  let commits: GitHubRepositoryCommit[] = []
-  let discussions: GitHubRepositoryDiscussion[] = []
-  let issues: GitHubRepositoryIssue[] = []
-  let pullRequests: GitHubRepositoryPullRequest[] = []
-  let releases: GitHubRepositoryRelease[] = []
-  let commitCount = 0
-  let discussionCount = 0
-  let issueCount = 0
-  let pullRequestCount = 0
-  let repositoryLanguages: Record<string, number> = {}
-
-  if (!isAuthenticated || currentTab === "code" || currentTab === "commits") {
-    const [commitsResult, countResult] = await Promise.all([
-      getGitHubRepositoryCommits(username, repo, sessionUser, resolvedBranch),
-      getGitHubRepositoryCommitCount(
-        username,
-        repo,
-        sessionUser,
-        resolvedBranch
-      ),
-    ])
-    commits = commitsResult
-    commitCount = countResult
-  }
-
-  if (!isAuthenticated || currentTab === "issues") {
-    const [issuesResult, countResult] = await Promise.all([
-      getGitHubRepositoryIssues(username, repo, sessionUser),
-      getGitHubRepositoryIssueCount(username, repo, sessionUser),
-    ])
-    issues = issuesResult
-    issueCount = countResult
-  }
-
-  if (!isAuthenticated || currentTab === "discussions") {
-    const [discussionsResult, countResult] = await Promise.all([
-      getGitHubRepositoryDiscussions(username, repo, sessionUser),
-      getGitHubRepositoryDiscussionCount(username, repo, sessionUser),
-    ])
-    discussions = discussionsResult
-    discussionCount = countResult
-  }
-
-  if (!isAuthenticated || currentTab === "pulls") {
-    const [prsResult, countResult] = await Promise.all([
-      getGitHubRepositoryPullRequests(username, repo, sessionUser),
-      getGitHubRepositoryPullRequestCount(username, repo, sessionUser),
-    ])
-    pullRequests = prsResult
-    pullRequestCount = countResult
-  }
-
-  if (!isAuthenticated || currentTab === "releases") {
-    releases = await getGitHubRepositoryReleases(username, repo, sessionUser)
-  }
-
-  if (!isAuthenticated || currentTab === "code") {
-    repositoryLanguages = await getGitHubRepositoryLanguages(
+  const [
+    commits,
+    commitCount,
+    discussions,
+    discussionCount,
+    issues,
+    issueCount,
+    pullRequests,
+    pullRequestCount,
+    releases,
+    repositoryLanguages,
+  ] = await Promise.all([
+    getGitHubRepositoryCommits(username, repo, sessionUser, resolvedBranch),
+    getGitHubRepositoryCommitCount(
       username,
       repo,
-      sessionUser
-    )
-  }
+      sessionUser,
+      resolvedBranch
+    ),
+    getGitHubRepositoryDiscussions(username, repo, sessionUser),
+    getGitHubRepositoryDiscussionCount(username, repo, sessionUser),
+    getGitHubRepositoryIssues(username, repo, sessionUser),
+    getGitHubRepositoryIssueCount(username, repo, sessionUser),
+    getGitHubRepositoryPullRequests(username, repo, sessionUser),
+    getGitHubRepositoryPullRequestCount(username, repo, sessionUser),
+    getGitHubRepositoryReleases(username, repo, sessionUser),
+    getGitHubRepositoryLanguages(username, repo, sessionUser),
+  ])
   const latestRelease = releases[0] ?? null
   const canEditRepository = canManageRepository && !isCommitRef
   const isOwnedEmptyRepository = canManageRepository && contents.length === 0

@@ -17,7 +17,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ContextMenuItem } from "@/components/ui/context-menu"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { GitHubRepository } from "@/lib/github"
+import { cn } from "@/lib/utils"
 import { usePrefetchRoutes } from "@/hooks/usePrefetchRoutes"
 import A from "./A"
 import Loader from "@/components/Loader"
@@ -200,17 +208,10 @@ export default function ProfileRepositories({
     remoteResults,
   ])
 
-  const handleSortModeToggle = () => {
-    setSortMode((current) => {
-      if (current === "updated") return "stars"
-      if (current === "stars") return "name"
-      return "updated"
-    })
+  const handleSortChange = (value: string) => {
+    setSortMode(value as "updated" | "stars" | "name")
     setCurrentPage(1)
   }
-
-  const sortLabel =
-    sortMode === "updated" ? "Updated" : sortMode === "stars" ? "Star" : "Name"
 
   const totalPages = Math.ceil(filteredRepositories.length / pageSize)
   const paginatedRepositories = useMemo(() => {
@@ -278,14 +279,24 @@ export default function ProfileRepositories({
               {value}
             </Button>
           ))}
-          <Button
-            variant="outline"
-            size={compact ? "sm" : "default"}
-            className={compact ? "rounded-xl" : "rounded-2xl"}
-            onClick={handleSortModeToggle}
-          >
-            {sortLabel}
-          </Button>
+          <Select value={sortMode} onValueChange={handleSortChange}>
+            <SelectTrigger
+              aria-label="Sort repositories"
+              className={cn(
+                "border-border bg-background text-foreground",
+                compact
+                  ? "h-8 rounded-xl px-3 text-xs"
+                  : "h-10 rounded-2xl px-4 text-sm"
+              )}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="updated">Updated</SelectItem>
+              <SelectItem value="stars">Stars</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
