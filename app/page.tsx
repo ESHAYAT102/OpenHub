@@ -37,7 +37,7 @@ export default async function Page({ searchParams }: HomePageProps) {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-semibold tracking-tight">
-                    Your Activity
+                    Your activity
                   </h1>
                   <p className="text-sm text-muted-foreground">
                     Recent commits, issues, and pull requests
