@@ -99,7 +99,7 @@ export default function RepositoryActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-[min(92vw,26rem)] rounded-2xl border border-border/70 bg-card p-4 shadow-2xl"
+          className="w-[min(92vw,26rem)] rounded-2xl border border-border/70 bg-card/80 p-4 shadow-2xl supports-backdrop-filter:backdrop-blur-sm"
         >
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-2 rounded-xl border border-border/70 bg-background/40 p-1">

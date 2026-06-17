@@ -1154,7 +1154,7 @@ export default function CommandPalette({
           <Command
             shouldFilter={false}
             ref={dialogRef}
-            className="fixed top-[15vh] left-1/2 z-60 w-[min(96vw,720px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-foreground/10 bg-background shadow-2xl"
+            className="fixed top-[15vh] left-1/2 z-60 w-[min(96vw,720px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-foreground/10 bg-background/80 shadow-2xl supports-backdrop-filter:backdrop-blur-xl"
             onContextMenu={(event) => event.preventDefault()}
           >
             <DialogPrimitive.Title className="sr-only">

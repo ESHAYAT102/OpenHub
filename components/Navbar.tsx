@@ -48,6 +48,12 @@ export default function Page({ initialUnreadNotifications = [] }: NavbarProps) {
   const [isCommandOpen, setIsCommandOpen] = useState(false)
   const [commandInitialValue, setCommandInitialValue] = useState("")
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const profileUrl = useMemo(
     () => (user?.login ? `/${user.login}` : "/"),
     [user?.login]
@@ -99,7 +105,7 @@ export default function Page({ initialUnreadNotifications = [] }: NavbarProps) {
   const authUrl = "/api/auth/github/login?callbackUrl=/"
 
   return (
-    <nav className="fixed z-50 flex w-full items-center justify-between border-b border-foreground/10 bg-background px-4 py-4 md:px-8">
+    <nav className="fixed z-50 flex w-full items-center justify-between border-b border-foreground/10 bg-background/80 px-4 py-4 md:px-8 supports-backdrop-filter:backdrop-blur-xl">
       <CommandPalette
         open={isCommandOpen}
         onOpenChange={handleCommandOpenChange}
@@ -182,7 +188,7 @@ export default function Page({ initialUnreadNotifications = [] }: NavbarProps) {
             setIsCommandOpen(true)
           }}
         >
-          {isDarkTheme ? <Moon /> : <Sun />}
+          {mounted && isDarkTheme ? <Moon /> : mounted ? <Sun /> : null}
         </Button>
         {user ? (
           <DropdownMenu>
