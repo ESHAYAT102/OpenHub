@@ -154,7 +154,6 @@ export default function RepositoryEngagementActions({
               data-repo-action-fork
             >
               <GitFork />
-              <span className="tabular-nums">{forkCount}</span>
             </Button>
           ) : null}
 
