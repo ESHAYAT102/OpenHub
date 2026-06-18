@@ -192,7 +192,7 @@ export default function ProfileActivityTimeline({
                               className="flex items-start justify-between gap-4 px-5 py-4 transition hover:bg-accent/20"
                             >
                               <div className="min-w-0">
-                                <div className="mb-1 flex items-center gap-2">
+                                <div className="mb-1 flex min-w-0 items-center gap-2">
                                   <span className="size-2 rounded-full bg-lime-300" />
                                   <span className="truncate text-base">
                                     {item.title}

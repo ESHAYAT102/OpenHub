@@ -187,7 +187,7 @@ export default function HomeActivity({ activity: initialActivity }: HomeActivity
             <A
               key={item.id}
               href={item.internalUrl ?? item.url}
-              className="block"
+              className="block min-w-0"
             >
               <Card className="transition hover:bg-accent/20">
                 <CardHeader className="flex-row items-center gap-3 space-y-0 pb-2">
@@ -215,7 +215,7 @@ export default function HomeActivity({ activity: initialActivity }: HomeActivity
                 </CardHeader>
                 <CardContent>
                   <p className="truncate text-sm">{item.title}</p>
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-2 truncate text-xs text-muted-foreground">
                     {item.repoName} · {formatRelativeDate(item.createdAt)}
                   </p>
                 </CardContent>
