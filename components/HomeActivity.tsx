@@ -73,6 +73,7 @@ export default function HomeActivity({ activity: initialActivity }: HomeActivity
   const [activeTab, setActiveTab] = useState<
     "all" | "commits" | "discussions" | "issues" | "prs"
   >("all")
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     if (initialActivity) return
@@ -91,18 +92,17 @@ export default function HomeActivity({ activity: initialActivity }: HomeActivity
     return () => controller.abort()
   }, [initialActivity])
 
-  const filteredActivity = useMemo(() => {
-    if (activeTab === "all") return activity.slice(0, 20)
-    if (activeTab === "commits")
-      return activity.filter((a) => a.category === "Commits").slice(0, 20)
-    if (activeTab === "discussions")
-      return activity.filter((a) => a.category === "Discussions").slice(0, 20)
-    if (activeTab === "issues")
-      return activity.filter((a) => a.category === "Issues").slice(0, 20)
-    if (activeTab === "prs")
-      return activity.filter((a) => a.category === "Pull Requests").slice(0, 20)
-    return activity.slice(0, 20)
-  }, [activity, activeTab])
+  const { filteredActivity, hasMore } = useMemo(() => {
+    const base =
+      activeTab === "all" ? activity
+      : activeTab === "commits" ? activity.filter((a) => a.category === "Commits")
+      : activeTab === "discussions" ? activity.filter((a) => a.category === "Discussions")
+      : activeTab === "issues" ? activity.filter((a) => a.category === "Issues")
+      : activeTab === "prs" ? activity.filter((a) => a.category === "Pull Requests")
+      : activity
+    const limit = showAll ? 20 : 4
+    return { filteredActivity: base.slice(0, limit), hasMore: base.length > 4 }
+  }, [activity, activeTab, showAll])
 
   const commits = activity.filter((a) => a.category === "Commits")
   const discussions = activity.filter((a) => a.category === "Discussions")
@@ -224,6 +224,16 @@ export default function HomeActivity({ activity: initialActivity }: HomeActivity
           )
         })}
       </div>
+
+      {hasMore && (
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? "Show less" : "Show more"}
+        </Button>
+      )}
     </div>
   )
 }
