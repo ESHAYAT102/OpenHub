@@ -127,20 +127,19 @@ export default function RepositoryEngagementActions({
   return (
     <>
       {compact ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             className={[
-              "rounded-full px-3 text-sm",
+              "rounded-full px-2 text-sm",
               isStarred ? "text-yellow-500" : "text-muted-foreground",
             ].join(" ")}
             onClick={handleStarToggle}
             data-repo-action-star
           >
             <Star className={isStarred ? "fill-current" : undefined} />
-            Star
             <span className="tabular-nums">{starCount}</span>
           </Button>
 
@@ -149,13 +148,12 @@ export default function RepositoryEngagementActions({
               type="button"
               variant="ghost"
               size="sm"
-              className="rounded-full px-3 text-sm text-muted-foreground"
+              className="rounded-full px-2 text-sm text-muted-foreground"
               disabled={isForking}
               onClick={handleFork}
               data-repo-action-fork
             >
               <GitFork />
-              Fork
               <span className="tabular-nums">{forkCount}</span>
             </Button>
           ) : null}
@@ -164,25 +162,23 @@ export default function RepositoryEngagementActions({
             type="button"
             variant="ghost"
             size="sm"
-            className="rounded-full px-3 text-sm text-muted-foreground"
+            className="rounded-full px-2 text-sm text-muted-foreground"
             onClick={handleCloneCopy}
             data-repo-action-clone
           >
             <Copy />
-            Clone
           </Button>
         </div>
       ) : (
-        <div className="grid w-full grid-cols-1 gap-2 min-[440px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant={isStarred ? "secondary" : "outline"}
-            className="w-full rounded-xl sm:w-auto"
+            className="rounded-xl"
             onClick={handleStarToggle}
             data-repo-action-star
           >
             <Star className={isStarred ? "fill-current" : undefined} />
-            Star
             <span className="text-muted-foreground">{starCount}</span>
           </Button>
 
@@ -190,13 +186,12 @@ export default function RepositoryEngagementActions({
             <Button
               type="button"
               variant="outline"
-              className="w-full rounded-xl sm:w-auto"
+              className="rounded-xl"
               disabled={isForking}
               onClick={handleFork}
               data-repo-action-fork
             >
               <GitFork />
-              Fork
               <span className="text-muted-foreground">{forkCount}</span>
             </Button>
           ) : null}

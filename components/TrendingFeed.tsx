@@ -24,17 +24,6 @@ type TrendingFeedProps = {
   pageSize?: number
 }
 
-function formatRelativeDate(value: string) {
-  const diff = Date.now() - new Date(value).getTime()
-  const hours = Math.floor(diff / (1000 * 60 * 60))
-  if (hours < 1) return ""
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  const months = Math.floor(days / 30)
-  return `${months}mo ago`
-}
-
 function TrendingFeedPost({
   item,
 }: {
@@ -121,11 +110,6 @@ function TrendingFeedPost({
             </div>
           </div>
 
-          {formatRelativeDate(item.updatedAt) ? (
-            <div className="shrink-0 text-xs text-muted-foreground">
-              {formatRelativeDate(item.updatedAt)}
-            </div>
-          ) : null}
         </div>
 
         <div className="space-y-3">

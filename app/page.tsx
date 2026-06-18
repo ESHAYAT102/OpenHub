@@ -32,9 +32,6 @@ export default async function Page({ searchParams }: HomePageProps) {
                 <h1 className="text-3xl font-semibold tracking-tight">
                   Your activity
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Recent commits, issues, and pull requests
-                </p>
               </div>
               <HomeActivity />
             </div>
