@@ -1,5 +1,5 @@
 # Xenon
-**Raycast for GitHub in the web: fast navigation, rich repo browsing, and keyboard-driven workflows.**
+**Raycast for GitHub in the web, also Twitter for developers: a scrollable feed for discovering repos, fast navigation, rich repo browsing, and keyboard-driven workflows.**
 
 ---
 
