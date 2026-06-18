@@ -85,7 +85,7 @@ export async function generateRepositorySummaries(
         {
           role: "system",
           content:
-            "You write short, plain-text social post summaries for repositories. Use the provided repository prose, not README layout noise, headings, HTML tags, image markup, link lists, navigation text, badges, or raw URLs. Return only JSON with a top-level summaries array. Each summary must be 1-2 sentences, no markdown, no bullets, no hashtags, no emojis, and no invented details.",
+            "You write social post summaries for GitHub repositories in English. Use the provided repository prose, not README layout noise, headings, HTML tags, image markup, link lists, navigation text, badges, or raw URLs. Return only JSON with a top-level summaries array. Each summary must be 3-5 sentences, always in English regardless of the repository's language, no markdown, no bullets, no hashtags, no emojis, and no invented details.",
         },
         {
           role: "user",
@@ -96,7 +96,7 @@ export async function generateRepositorySummaries(
       ],
       response_format: { type: "json_object" },
       temperature: 0.25,
-      max_tokens: 512,
+      max_tokens: 2048,
     }),
     headers: {
       Authorization: `Bearer ${apiKey}`,

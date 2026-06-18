@@ -217,5 +217,5 @@ export function extractSummarySource(markdown: string) {
     return ""
   }
 
-  return candidates.slice(0, 2).join(" ")
+  return candidates.slice(0, 8).join(" ")
 }

@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
 import type { TrendingFeedPage } from "@/lib/trending-feed"
 
 type TrendingFeedProps = {
-  initialPage: TrendingFeedPage
+  initialPage?: TrendingFeedPage
   pageSize?: number
 }
 
@@ -169,26 +169,104 @@ function TrendingFeedPost({
   )
 }
 
+function TrendingFeedSkeleton() {
+  return (
+    <div className="divide-y divide-border/70">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="flex gap-3 px-4 py-5 sm:gap-4 sm:px-6">
+          <div className="size-11 shrink-0 animate-pulse rounded-full bg-muted" />
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+              </div>
+              <div className="h-3 w-12 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <div className="h-7 w-16 animate-pulse rounded-full bg-muted" />
+              <div className="h-7 w-16 animate-pulse rounded-full bg-muted" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const clientFeedCache = new Map<
+  string,
+  { items: TrendingFeedPage["items"]; nextCursor: string | null; hasMore: boolean }
+>()
+
 export default function TrendingFeed({
   initialPage,
   pageSize = 5,
 }: TrendingFeedProps) {
-  const [items, setItems] = useState(initialPage.items)
-  const [nextCursor, setNextCursor] = useState(initialPage.nextCursor)
-  const [hasMore, setHasMore] = useState(initialPage.hasMore)
+  const cacheKey = `trending:${pageSize}`
+  const cached = clientFeedCache.get(cacheKey)
+
+  const [items, setItems] = useState(cached?.items ?? initialPage?.items ?? [])
+  const [nextCursor, setNextCursor] = useState(
+    cached?.nextCursor ?? initialPage?.nextCursor ?? "1"
+  )
+  const [hasMore, setHasMore] = useState(cached?.hasMore ?? initialPage?.hasMore ?? true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(!initialPage && !cached)
+  const [initialLoadError, setInitialLoadError] = useState(false)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const observerLockRef = useRef(false)
-  const nextCursorRef = useRef(initialPage.nextCursor)
-  const hasMoreRef = useRef(initialPage.hasMore)
+  const nextCursorRef = useRef(cached?.nextCursor ?? initialPage?.nextCursor ?? "1")
+  const hasMoreRef = useRef(cached?.hasMore ?? initialPage?.hasMore ?? true)
   const pageSizeRef = useRef(pageSize)
   const loadTriggeredWhileVisibleRef = useRef(false)
 
   useEffect(() => {
-    setItems(initialPage.items)
-    setNextCursor(initialPage.nextCursor)
-    setHasMore(initialPage.hasMore)
+    if (initialPage) {
+      setItems(initialPage.items)
+      setNextCursor(initialPage.nextCursor ?? "1")
+      setHasMore(initialPage.hasMore)
+      setIsInitialLoading(false)
+    }
   }, [initialPage])
+
+  useEffect(() => {
+    if (initialPage || cached) return
+
+    const fetchInitial = async () => {
+      try {
+        const response = await fetch(
+          `/api/trending-feed?cursor=1&limit=${pageSize}`,
+          { cache: "no-store" }
+        )
+        if (!response.ok) {
+          setInitialLoadError(true)
+          setHasMore(false)
+          return
+        }
+
+        const data = (await response.json()) as TrendingFeedPage
+        setItems(data.items)
+        setNextCursor(data.nextCursor ?? "1")
+        setHasMore(data.hasMore)
+      } catch {
+        setInitialLoadError(true)
+        setHasMore(false)
+      } finally {
+        setIsInitialLoading(false)
+      }
+    }
+
+    fetchInitial()
+  }, [initialPage, pageSize])
+
+  useEffect(() => {
+    clientFeedCache.set(cacheKey, { items, nextCursor, hasMore })
+  }, [cacheKey, items, nextCursor, hasMore])
 
   useEffect(() => {
     nextCursorRef.current = nextCursor
@@ -223,7 +301,7 @@ export default function TrendingFeed({
 
       const data = (await response.json()) as TrendingFeedPage
       setItems((current) => [...current, ...data.items])
-      setNextCursor(data.nextCursor)
+      setNextCursor(data.nextCursor ?? "1")
       setHasMore(data.hasMore)
     } catch {
       // Leave the existing items in place and stop retry storms.
@@ -236,7 +314,7 @@ export default function TrendingFeed({
 
   useEffect(() => {
     const sentinel = sentinelRef.current
-    if (!sentinel || !hasMore) {
+    if (!sentinel || !hasMore || isInitialLoading) {
       return
     }
 
@@ -258,7 +336,7 @@ export default function TrendingFeed({
 
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [hasMore])
+  }, [hasMore, isInitialLoading])
 
   return (
     <section className="w-full space-y-4">
@@ -269,36 +347,46 @@ export default function TrendingFeed({
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
-        <div className="divide-y divide-border/70">
-          {items.map((item) => (
-            <TrendingFeedPost
-              key={`${item.author.login}/${item.repoName}`}
-              item={item}
-            />
-          ))}
-        </div>
-
-        {items.length === 0 ? (
+        {isInitialLoading ? (
+          <TrendingFeedSkeleton />
+        ) : initialLoadError ? (
           <div className="px-6 py-16 text-center text-muted-foreground">
-            No trending repositories right now.
+            Failed to load trending repositories.
           </div>
-        ) : null}
+        ) : (
+          <>
+            <div className="divide-y divide-border/70">
+              {items.map((item) => (
+                <TrendingFeedPost
+                  key={`${item.author.login}/${item.repoName}`}
+                  item={item}
+                />
+              ))}
+            </div>
 
-        <div
-          ref={sentinelRef}
-          className={cn("px-6 py-5", !hasMore && "hidden")}
-        >
-          {isLoadingMore ? (
-            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader className="-ml-1 scale-90" />
-              Loading more posts
+            {items.length === 0 ? (
+              <div className="px-6 py-16 text-center text-muted-foreground">
+                No trending repositories right now.
+              </div>
+            ) : null}
+
+            <div
+              ref={sentinelRef}
+              className={cn("px-6 py-5", !hasMore && "hidden")}
+            >
+              {isLoadingMore ? (
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader className="-ml-1 scale-90" />
+                  Loading more posts
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  Keep scrolling for more trending repos.
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              Keep scrolling for more trending repos.
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </section>
   )

@@ -1,10 +1,5 @@
 import Navbar from "@/components/Navbar"
-import {
-  getGitHubActivity,
-  getGitHubNotifications,
-} from "@/lib/github"
 import { headers } from "next/headers"
-import { getTrendingFeedPage } from "@/lib/trending-feed"
 import { getSessionUser } from "@/lib/session"
 import { isFirefoxLikeUserAgent } from "@/lib/browser"
 
@@ -23,19 +18,11 @@ export default async function Page({ searchParams }: HomePageProps) {
   const disableBrowserExtras = isFirefoxLikeUserAgent(userAgent)
   const user = await getSessionUser()
 
-  const [unreadNotifications, trendingFeed, activity] = user
-    ? await Promise.all([
-        getGitHubNotifications(user, { unreadOnly: true }),
-        getTrendingFeedPage(user, { page: 1, perPage: 5 }),
-        getGitHubActivity(user.login, user),
-      ])
-    : [null, null, []]
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar
         disableBrowserInteractions={disableBrowserExtras}
-        initialUnreadNotifications={unreadNotifications ?? []}
+        initialUnreadNotifications={[]}
       />
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 pt-24 pb-10 md:px-8">
         {user ? (
@@ -49,11 +36,11 @@ export default async function Page({ searchParams }: HomePageProps) {
                   Recent commits, issues, and pull requests
                 </p>
               </div>
-              <HomeActivity activity={activity} />
+              <HomeActivity />
             </div>
 
             <div className="space-y-6">
-              {trendingFeed ? <TrendingFeed initialPage={trendingFeed} /> : null}
+              <TrendingFeed />
             </div>
           </>
         ) : (

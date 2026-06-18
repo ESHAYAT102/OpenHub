@@ -61,6 +61,17 @@ function isVideoUrl(value: string) {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(value)
 }
 
+function isBadgeUrl(value: string) {
+  try {
+    const url = new URL(value, "https://example.com")
+    return /badge|shields\.io|img\.shields|badge\.fury|travis-ci|codecov|coveralls|appveyor|img\.badgesize|ci\.github|codacy|sonarcloud|goreportcard|gitter|discordapp|renovate|david-dm|snyk|depfu|libraries\.io|api\.codeclimate|api\.netlify|opencollective|w3c\.org|validator\.w3|jquery\.com|rubygems|npmjs|packagequality|chrome\.com|addtoany|forthebadge|gitmoji|badgen\.net|static\.badgen/i.test(
+      url.host + url.pathname
+    )
+  } catch {
+    return false
+  }
+}
+
 function normalizePath(path: string) {
   const parts = path.split("/")
   const normalized: string[] = []
@@ -96,6 +107,8 @@ function findReadmeMedia(markdown: string) {
 
     const url = candidate.split(/\s+/)[0]?.trim() ?? ""
     if (!url) continue
+
+    if (isBadgeUrl(url)) continue
 
     if (match[1] || match[2]) {
       return { type: "image" as const, url }
@@ -256,12 +269,21 @@ async function buildSummaryMap(
   return summaryMap
 }
 
+const feedCache = new Map<string, { data: TrendingFeedPage; timestamp: number }>()
+const FEED_CACHE_TTL = 10 * 60 * 1000
+
 export async function getTrendingFeedPage(
   sessionUser: SessionUser | null,
   options?: { page?: number; perPage?: number }
 ): Promise<TrendingFeedPage> {
   const page = Math.max(1, options?.page ?? 1)
   const perPage = Math.min(10, Math.max(1, options?.perPage ?? 5))
+  const cacheKey = `${page}:${perPage}`
+  const cached = feedCache.get(cacheKey)
+  if (cached && Date.now() - cached.timestamp < FEED_CACHE_TTL) {
+    return cached.data
+  }
+
   const repositories = await getTrendingRepositoriesPage(sessionUser, {
     page,
     perPage,
@@ -353,9 +375,13 @@ export async function getTrendingFeedPage(
 
   const hasMore = repositories.length === perPage
 
-  return {
+  const result: TrendingFeedPage = {
     hasMore,
     items,
     nextCursor: hasMore ? String(page + 1) : null,
   }
+
+  feedCache.set(cacheKey, { data: result, timestamp: Date.now() })
+
+  return result
 }

@@ -232,7 +232,7 @@ export default function Page({
         <Button
           className="hidden rounded-full md:flex"
           variant="ghost"
-          title={`Theme: ${getThemeLabel(currentTheme)}`}
+          title={mounted ? `Theme: ${getThemeLabel(currentTheme)}` : undefined}
           onClick={() => {
             setCommandInitialValue("/themes ")
             setIsCommandOpen(true)

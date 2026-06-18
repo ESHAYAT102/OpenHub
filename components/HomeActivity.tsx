@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   CircleDot,
   FilePlus2,
@@ -13,11 +13,12 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import Loader from "@/components/Loader"
 import type { ProfileActivityItem } from "@/lib/github"
 import A from "./A"
 
 type HomeActivityProps = {
-  activity: ProfileActivityItem[]
+  activity?: ProfileActivityItem[]
 }
 
 function formatRelativeDate(value: string) {
@@ -48,10 +49,47 @@ function getCategoryIcon(category: ProfileActivityItem["category"]) {
   }
 }
 
-export default function HomeActivity({ activity }: HomeActivityProps) {
+function HomeActivitySkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Card key={i} className="rounded-3xl">
+          <CardHeader className="flex-row items-center gap-3 space-y-0 pb-2">
+            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-4 w-full animate-pulse rounded bg-muted" />
+            <div className="mt-2 h-3 w-24 animate-pulse rounded bg-muted" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+export default function HomeActivity({ activity: initialActivity }: HomeActivityProps) {
+  const [activity, setActivity] = useState(initialActivity ?? [])
+  const [isLoading, setIsLoading] = useState(!initialActivity)
   const [activeTab, setActiveTab] = useState<
     "all" | "commits" | "discussions" | "issues" | "prs"
   >("all")
+
+  useEffect(() => {
+    if (initialActivity) return
+
+    const controller = new AbortController()
+    fetch("/api/user/activity", { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.activity) {
+          setActivity(data.activity)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false))
+
+    return () => controller.abort()
+  }, [initialActivity])
 
   const filteredActivity = useMemo(() => {
     if (activeTab === "all") return activity.slice(0, 20)
@@ -70,6 +108,10 @@ export default function HomeActivity({ activity }: HomeActivityProps) {
   const discussions = activity.filter((a) => a.category === "Discussions")
   const issues = activity.filter((a) => a.category === "Issues")
   const prs = activity.filter((a) => a.category === "Pull Requests")
+
+  if (isLoading) {
+    return <HomeActivitySkeleton />
+  }
 
   if (activity.length === 0) {
     return (

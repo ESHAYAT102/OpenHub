@@ -237,7 +237,8 @@ export default function CommandPalette({
   }, [])
 
   useEffect(() => {
-    if (!user?.login) return
+    if (!user?.login || !open) return
+    if (userRepos.length > 0) return
 
     const controller = new AbortController()
     fetch(`/api/user/repos?per_page=30`, { signal: controller.signal })
@@ -250,7 +251,7 @@ export default function CommandPalette({
       .catch(() => {})
 
     return () => controller.abort()
-  }, [user?.login])
+  }, [user?.login, open, userRepos.length])
 
   const markCommandUsed = (id: string) => {
     setRecentCommands((current) => {
@@ -1013,8 +1014,8 @@ export default function CommandPalette({
       }
     }
 
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
+    window.addEventListener("keydown", onKeyDown, { capture: true })
+    return () => window.removeEventListener("keydown", onKeyDown, { capture: true })
   }, [disableGlobalHotkeys, open, onOpenChange])
 
   useEffect(() => {
