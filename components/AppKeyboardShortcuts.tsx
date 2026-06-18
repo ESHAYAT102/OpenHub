@@ -7,6 +7,12 @@ export default function AppKeyboardShortcuts() {
   const router = useRouter()
 
   useEffect(() => {
+    // Firefox/Zen already has more aggressive browser-level shortcuts.
+    // Keep this listener disabled there to avoid conflicting navigation loops.
+    if (typeof navigator !== "undefined" && /Firefox|Zen/i.test(navigator.userAgent)) {
+      return
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.repeat) return
       if (event.altKey || event.shiftKey) return

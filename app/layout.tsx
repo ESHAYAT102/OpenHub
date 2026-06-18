@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google"
 import type { Metadata } from "next"
+import { headers } from "next/headers"
 import Script from "next/script"
 
 import AppKeyboardShortcuts from "@/components/AppKeyboardShortcuts"
@@ -10,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 import { UiSoundEffects } from "@/components/UiSoundEffects"
+import { isFirefoxLikeUserAgent } from "@/lib/browser"
 
 const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
 
@@ -52,6 +54,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const requestHeaders = await headers()
+  const userAgent = requestHeaders.get("user-agent")
+  const disableBrowserExtras = isFirefoxLikeUserAgent(userAgent)
   const user = await getSessionUser()
 
   return (
@@ -73,9 +78,9 @@ export default async function RootLayout({
           data-website-id="d67f8207-6850-461e-9db7-c1f6d0617387"
         />
         <AuthProvider user={user}>
-          <ThemeProvider>
-            <AppKeyboardShortcuts />
-            <UiSoundEffects />
+          <ThemeProvider disableHotkeys={disableBrowserExtras}>
+            {!disableBrowserExtras ? <AppKeyboardShortcuts /> : null}
+            {!disableBrowserExtras ? <UiSoundEffects /> : null}
             {children}
             <Toaster richColors position="bottom-right" />
           </ThemeProvider>

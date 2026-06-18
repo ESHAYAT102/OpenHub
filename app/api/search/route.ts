@@ -6,6 +6,7 @@ export const runtime = "nodejs"
 
 type GitHubSearchRepository = {
   archived: boolean
+  clone_url: string
   created_at: string
   id: number
   forks_count: number
@@ -89,6 +90,7 @@ export async function GET(request: Request) {
   const repositories =
     repoResult?.items.map((repo) => ({
       archived: repo.archived,
+      clone_url: repo.clone_url,
       created_at: repo.created_at,
       id: repo.id,
       name: repo.name,

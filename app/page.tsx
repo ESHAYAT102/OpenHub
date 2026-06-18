@@ -1,14 +1,15 @@
-import BrowserContextMenu from "@/components/BrowserContextMenu"
 import Navbar from "@/components/Navbar"
 import {
   getGitHubActivity,
   getGitHubNotifications,
-  getTrendingRepositories,
 } from "@/lib/github"
+import { headers } from "next/headers"
+import { getTrendingFeedPage } from "@/lib/trending-feed"
 import { getSessionUser } from "@/lib/session"
+import { isFirefoxLikeUserAgent } from "@/lib/browser"
 
 import HomeActivity from "@/components/HomeActivity"
-import TrendingRepositories from "@/components/TrendingRepositories"
+import TrendingFeed from "@/components/TrendingFeed"
 import { LoginForm } from "@/components/login-form"
 
 type HomePageProps = {
@@ -17,46 +18,50 @@ type HomePageProps = {
 
 export default async function Page({ searchParams }: HomePageProps) {
   await searchParams
+  const requestHeaders = await headers()
+  const userAgent = requestHeaders.get("user-agent")
+  const disableBrowserExtras = isFirefoxLikeUserAgent(userAgent)
   const user = await getSessionUser()
 
-  const [unreadNotifications, trending, activity] = user
+  const [unreadNotifications, trendingFeed, activity] = user
     ? await Promise.all([
         getGitHubNotifications(user, { unreadOnly: true }),
-        getTrendingRepositories(user),
+        getTrendingFeedPage(user, { page: 1, perPage: 5 }),
         getGitHubActivity(user.login, user),
       ])
-    : [null, await getTrendingRepositories(user), []]
+    : [null, null, []]
 
   return (
-    <BrowserContextMenu triggerClassName="block min-h-screen w-full">
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar initialUnreadNotifications={unreadNotifications ?? []} />
-        <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 pt-24 pb-10 md:px-8">
-          {user ? (
-            <>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-semibold tracking-tight">
-                    Your activity
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    Recent commits, issues, and pull requests
-                  </p>
-                </div>
-                <HomeActivity activity={activity} />
+    <div className="min-h-screen bg-background text-foreground">
+      <Navbar
+        disableBrowserInteractions={disableBrowserExtras}
+        initialUnreadNotifications={unreadNotifications ?? []}
+      />
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 pt-24 pb-10 md:px-8">
+        {user ? (
+          <>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-semibold tracking-tight">
+                  Your activity
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Recent commits, issues, and pull requests
+                </p>
               </div>
-
-              <div className="space-y-6">
-                <TrendingRepositories repositories={trending} />
-              </div>
-            </>
-          ) : (
-            <div className="flex min-h-[60vh] items-center justify-center">
-              <LoginForm />
+              <HomeActivity activity={activity} />
             </div>
-          )}
-        </main>
-      </div>
-    </BrowserContextMenu>
+
+            <div className="space-y-6">
+              {trendingFeed ? <TrendingFeed initialPage={trendingFeed} /> : null}
+            </div>
+          </>
+        ) : (
+          <div className="flex min-h-[60vh] items-center justify-center">
+            <LoginForm />
+          </div>
+        )}
+      </main>
+    </div>
   )
 }

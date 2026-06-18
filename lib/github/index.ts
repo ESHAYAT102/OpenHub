@@ -81,6 +81,7 @@ export type GitHubRepositoryFileDeleteInput = {
 
 export type GitHubRepository = {
   archived: boolean
+  clone_url: string
   created_at: string
   default_branch?: string
   description: string | null
@@ -136,6 +137,14 @@ export type GitHubRepositoryContent = {
 export type GitHubRepositoryReadme = {
   content: string
   html_url: string
+  name: string
+  path: string
+  sha: string
+}
+
+export type GitHubRepositoryReadmeData = {
+  htmlUrl: string
+  markdown: string
   name: string
   path: string
   sha: string
@@ -937,14 +946,20 @@ export async function getGitHubViewerRepositories(
   return resolveRepositoryLanguages(repositories, sessionUser.accessToken)
 }
 
-export async function getTrendingRepositories(sessionUser: SessionUser | null) {
+export async function getTrendingRepositoriesPage(
+  sessionUser: SessionUser | null,
+  options?: { page?: number; perPage?: number }
+) {
   const accessToken = sessionUser?.accessToken
+  const page = Math.max(1, options?.page ?? 1)
+  const perPage = Math.min(100, Math.max(1, options?.perPage ?? 50))
   const since = new Date()
   since.setDate(since.getDate() - 30)
 
   const query = new URLSearchParams({
     order: "desc",
-    per_page: "50",
+    page: String(page),
+    per_page: String(perPage),
     q: `created:>=${since.toISOString().slice(0, 10)}`,
     sort: "stars",
   })
@@ -957,6 +972,99 @@ export async function getTrendingRepositories(sessionUser: SessionUser | null) {
   )
 
   return resolveRepositoryLanguages(result?.items ?? [], accessToken)
+}
+
+export async function getTrendingRepositories(sessionUser: SessionUser | null) {
+  return getTrendingRepositoriesPage(sessionUser, { page: 1, perPage: 50 })
+}
+
+export async function getGitHubProfileSummary(
+  username: string,
+  sessionUser: SessionUser | null
+) {
+  const accessToken = sessionUser?.accessToken
+  const cachedProfile = !accessToken ? getCachedProfile(username) : null
+
+  if (cachedProfile) {
+    return cachedProfile
+  }
+
+  const isOwnProfile =
+    Boolean(sessionUser?.accessToken) &&
+    sessionUser?.login.toLowerCase() === username.toLowerCase()
+
+  const ownProfileResponse = isOwnProfile
+    ? await fetchJsonWithStatus<GitHubProfile>(
+        "https://api.github.com/user",
+        accessToken
+      )
+    : null
+  const userProfileResponse = !isOwnProfile
+    ? await fetchJsonWithStatus<GitHubProfile>(
+        `https://api.github.com/users/${username}`,
+        accessToken
+      )
+    : null
+  const organizationProfileResponse = !isOwnProfile
+    ? await fetchJsonWithStatus<GitHubProfile>(
+        `https://api.github.com/orgs/${username}`,
+        accessToken
+      )
+    : null
+
+  const profile =
+    ownProfileResponse?.data ??
+    userProfileResponse?.data ??
+    organizationProfileResponse?.data ??
+    buildPlaceholderProfile(username)
+
+  setCachedProfile(username, profile)
+
+  return profile
+}
+
+export async function getGitHubRepositoryReadme(
+  owner: string,
+  repo: string,
+  sessionUser: SessionUser | null,
+  branch?: string
+) {
+  const accessToken = sessionUser?.accessToken
+  const cacheBase = `${sessionUser?.login ?? "anon"}:${owner}/${repo}:${branch ?? "default"}`
+  const readmeCacheKey = `${cacheBase}:readme`
+  const readmeEntry = readCacheEntry(readmeCache, readmeCacheKey)
+
+  if (readmeEntry) {
+    return readmeEntry.value
+      ? {
+          htmlUrl: readmeEntry.value.html_url,
+          markdown: decodeBase64Content(readmeEntry.value.content),
+          name: readmeEntry.value.name,
+          path: readmeEntry.value.path,
+          sha: readmeEntry.value.sha,
+        }
+      : null
+  }
+
+  const refQuery = branch ? `?ref=${encodeURIComponent(branch)}` : ""
+  const readmeResult = await fetchJsonWithStatus<GitHubRepositoryReadme>(
+    `https://api.github.com/repos/${owner}/${repo}/readme${refQuery}`,
+    accessToken
+  )
+
+  if (!readmeEntry) {
+    writeCache(readmeCache, readmeCacheKey, readmeResult.data ?? null)
+  }
+
+  return readmeResult.data
+    ? {
+        htmlUrl: readmeResult.data.html_url,
+        markdown: decodeBase64Content(readmeResult.data.content),
+        name: readmeResult.data.name,
+        path: readmeResult.data.path,
+        sha: readmeResult.data.sha,
+      }
+    : null
 }
 
 export async function getGitHubProfilePageData(

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { GitFork, Star } from "lucide-react"
+import { Copy, GitFork, Star } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input"
 
 type RepositoryEngagementActionsProps = {
   canFork?: boolean
+  cloneUrl?: string
+  compact?: boolean
   initialForkCount: number
   initialIsStarred: boolean
   initialStarCount: number
@@ -26,6 +28,8 @@ type RepositoryEngagementActionsProps = {
 
 export default function RepositoryEngagementActions({
   canFork = true,
+  cloneUrl,
+  compact = false,
   initialForkCount,
   initialIsStarred,
   initialStarCount,
@@ -109,36 +113,95 @@ export default function RepositoryEngagementActions({
     setIsForking(false)
   }
 
+  const handleCloneCopy = async () => {
+    try {
+      const repositoryCloneUrl =
+        cloneUrl ?? `${window.location.origin}/${owner}/${repo}.git`
+      await navigator.clipboard.writeText(`git clone ${repositoryCloneUrl}`)
+      toast.success("Clone command copied")
+    } catch {
+      toast.error("Could not copy clone command")
+    }
+  }
+
   return (
     <>
-      <div className="grid w-full grid-cols-1 gap-2 min-[440px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
-        <Button
-          type="button"
-          variant={isStarred ? "secondary" : "outline"}
-          className="w-full rounded-xl sm:w-auto"
-          onClick={handleStarToggle}
-          data-repo-action-star
-        >
-          <Star className={isStarred ? "fill-current" : undefined} />
-          Star
-          <span className="text-muted-foreground">{starCount}</span>
-        </Button>
-
-        {canFork ? (
+      {compact ? (
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant="outline"
-            className="w-full rounded-xl sm:w-auto"
-            disabled={isForking}
-            onClick={handleFork}
-            data-repo-action-fork
+            variant="ghost"
+            size="sm"
+            className={[
+              "rounded-full px-3 text-sm",
+              isStarred ? "text-yellow-500" : "text-muted-foreground",
+            ].join(" ")}
+            onClick={handleStarToggle}
+            data-repo-action-star
           >
-            <GitFork />
-            Fork
-            <span className="text-muted-foreground">{forkCount}</span>
+            <Star className={isStarred ? "fill-current" : undefined} />
+            Star
+            <span className="tabular-nums">{starCount}</span>
           </Button>
-        ) : null}
-      </div>
+
+          {canFork ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="rounded-full px-3 text-sm text-muted-foreground"
+              disabled={isForking}
+              onClick={handleFork}
+              data-repo-action-fork
+            >
+              <GitFork />
+              Fork
+              <span className="tabular-nums">{forkCount}</span>
+            </Button>
+          ) : null}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="rounded-full px-3 text-sm text-muted-foreground"
+            onClick={handleCloneCopy}
+            data-repo-action-clone
+          >
+            <Copy />
+            Clone
+          </Button>
+        </div>
+      ) : (
+        <div className="grid w-full grid-cols-1 gap-2 min-[440px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
+          <Button
+            type="button"
+            variant={isStarred ? "secondary" : "outline"}
+            className="w-full rounded-xl sm:w-auto"
+            onClick={handleStarToggle}
+            data-repo-action-star
+          >
+            <Star className={isStarred ? "fill-current" : undefined} />
+            Star
+            <span className="text-muted-foreground">{starCount}</span>
+          </Button>
+
+          {canFork ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-xl sm:w-auto"
+              disabled={isForking}
+              onClick={handleFork}
+              data-repo-action-fork
+            >
+              <GitFork />
+              Fork
+              <span className="text-muted-foreground">{forkCount}</span>
+            </Button>
+          ) : null}
+        </div>
+      )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">

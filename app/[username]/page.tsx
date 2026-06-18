@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import BrowserContextMenu from "@/components/BrowserContextMenu"
 import Navbar from "@/components/Navbar"
 import ProfileShowcase, {
   ProfileShowcaseFallback,
@@ -69,34 +68,32 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       : null
 
     return (
-      <BrowserContextMenu triggerClassName="block min-h-screen w-full">
-        <div className="min-h-screen bg-background text-foreground">
-          <Navbar initialUnreadNotifications={[]} />
-          <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 px-4 pt-50 pb-10 md:px-8">
-            <Empty className="w-full">
-              <EmptyHeader>
-                <EmptyTitle className="text-2xl">Rate limit reached</EmptyTitle>
-                <EmptyDescription>
-                  GitHub API rate limits were hit.{" "}
-                  {rateLimitTime
-                    ? `Try again after ${rateLimitTime}.`
-                    : "Try again in a few minutes."}
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button className="px-4" asChild>
-                  <A href={profileGitHubUrl}>Open in GitHub</A>
-                </Button>
-              </EmptyContent>
-            </Empty>
-            {!sessionUser && (
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar initialUnreadNotifications={[]} />
+        <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 px-4 pt-50 pb-10 md:px-8">
+          <Empty className="w-full">
+            <EmptyHeader>
+              <EmptyTitle className="text-2xl">Rate limit reached</EmptyTitle>
+              <EmptyDescription>
+                GitHub API rate limits were hit.{" "}
+                {rateLimitTime
+                  ? `Try again after ${rateLimitTime}.`
+                  : "Try again in a few minutes."}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
               <Button className="px-4" asChild>
-                <A href="/api/auth/github/login">Continue with GitHub</A>
+                <A href={profileGitHubUrl}>Open in GitHub</A>
               </Button>
-            )}
-          </div>
+            </EmptyContent>
+          </Empty>
+          {!sessionUser && (
+            <Button className="px-4" asChild>
+              <A href="/api/auth/github/login">Continue with GitHub</A>
+            </Button>
+          )}
         </div>
-      </BrowserContextMenu>
+      </div>
     )
   }
 
@@ -111,20 +108,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     : [undefined, []]
 
   return (
-    <BrowserContextMenu triggerClassName="block min-h-screen w-full">
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar initialUnreadNotifications={unreadNotifications} />
-        <main className="mx-auto w-full max-w-480 px-3 pt-24 pb-3 md:px-4 md:pb-4">
-          <Suspense fallback={<ProfileShowcaseFallback />}>
-            <ProfileShowcase
-              contributions={contributions}
-              profile={profile}
-              repositories={repositories}
-              starredRepositories={starredRepositories}
-            />
-          </Suspense>
-        </main>
-      </div>
-    </BrowserContextMenu>
+    <div className="min-h-screen bg-background text-foreground">
+      <Navbar initialUnreadNotifications={unreadNotifications} />
+      <main className="mx-auto w-full max-w-480 px-3 pt-24 pb-3 md:px-4 md:pb-4">
+        <Suspense fallback={<ProfileShowcaseFallback />}>
+          <ProfileShowcase
+            contributions={contributions}
+            profile={profile}
+            repositories={repositories}
+            starredRepositories={starredRepositories}
+          />
+        </Suspense>
+      </main>
+    </div>
   )
 }

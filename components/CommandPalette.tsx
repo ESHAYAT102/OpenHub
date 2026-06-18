@@ -44,6 +44,7 @@ import {
 
 type CommandPaletteProps = {
   open: boolean
+  disableGlobalHotkeys?: boolean
   onOpenChange: (open: boolean) => void
   onOpenNotificationsChange?: (open: boolean) => void
   initialValue?: string
@@ -130,6 +131,7 @@ function getMatchingThemeFamily(query: string) {
 
 export default function CommandPalette({
   open,
+  disableGlobalHotkeys = false,
   onOpenChange,
   onOpenNotificationsChange,
   initialValue,
@@ -981,6 +983,8 @@ export default function CommandPalette({
   }
 
   useEffect(() => {
+    if (disableGlobalHotkeys) return
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         (event.key === "k" || event.key === "K") &&
@@ -1011,7 +1015,7 @@ export default function CommandPalette({
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [open, onOpenChange])
+  }, [disableGlobalHotkeys, open, onOpenChange])
 
   useEffect(() => {
     if (!open) return

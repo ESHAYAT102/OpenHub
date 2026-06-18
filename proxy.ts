@@ -23,19 +23,6 @@ function shouldNegotiate(request: NextRequest) {
   return !/\.[a-z0-9]+$/i.test(pathname)
 }
 
-function discoveryLinks(request: NextRequest) {
-  const url = request.nextUrl
-  const markdownUrl = new URL(url.pathname + url.search, url.origin)
-
-  return [
-    `<${markdownUrl.toString()}>; rel="alternate"; type="text/markdown"`,
-    `</llms.txt>; rel="alternate"; type="text/plain"; title="LLM index"`,
-    `</llms-full.txt>; rel="alternate"; type="text/plain"; title="Full LLM context"`,
-    `</.well-known/agent-skills/index.json>; rel="service-desc"; type="application/json"`,
-    `</openapi.json>; rel="service-desc"; type="application/vnd.oai.openapi+json"`,
-  ].join(", ")
-}
-
 export function proxy(request: NextRequest) {
   if (!shouldNegotiate(request)) {
     return NextResponse.next()
@@ -60,8 +47,6 @@ export function proxy(request: NextRequest) {
 
     return NextResponse.rewrite(rewriteUrl, {
       headers: {
-        "Content-Signal": "ai-input=yes, search=yes, ai-train=no",
-        Link: discoveryLinks(request),
         Vary: "Accept",
       },
     })
@@ -72,12 +57,6 @@ export function proxy(request: NextRequest) {
       Vary: "Accept",
     },
   })
-  response.headers.set(
-    "Content-Signal",
-    "ai-input=yes, search=yes, ai-train=no"
-  )
-  response.headers.set("Link", discoveryLinks(request))
-  response.headers.set("Vary", "Accept")
 
   return response
 }

@@ -253,6 +253,10 @@ export function UiSoundEffects() {
   const lastHoverAt = React.useRef(0)
 
   const play = React.useCallback((name: UiSoundName) => {
+    if (typeof navigator !== "undefined" && /Firefox|Zen/i.test(navigator.userAgent)) {
+      return
+    }
+
     if (areUiSoundsDisabled()) return
 
     void ensureReady()
@@ -272,6 +276,10 @@ export function UiSoundEffects() {
   }, [])
 
   React.useEffect(() => {
+    if (typeof navigator !== "undefined" && /Firefox|Zen/i.test(navigator.userAgent)) {
+      return
+    }
+
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Element | null
 

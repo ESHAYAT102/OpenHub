@@ -244,34 +244,32 @@ export default async function RepositoryPage({
       : null
 
     return (
-      <BrowserContextMenu triggerClassName="block min-h-screen w-full">
-        <div className="min-h-screen bg-background text-foreground">
-          <Navbar initialUnreadNotifications={[]} />
-          <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 px-4 pt-24 pb-10 md:px-8">
-            <Empty className="w-full">
-              <EmptyHeader>
-                <EmptyTitle className="text-2xl">Rate limit reached</EmptyTitle>
-                <EmptyDescription>
-                  GitHub API rate limits were hit.{" "}
-                  {rateLimitTime
-                    ? `Try again after ${rateLimitTime}.`
-                    : "Try again in a few minutes."}
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button asChild>
-                  <A href={requestedGitHubUrl}>Open in GitHub</A>
-                </Button>
-              </EmptyContent>
-            </Empty>
-            {!sessionUser && (
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar initialUnreadNotifications={[]} />
+        <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 px-4 pt-24 pb-10 md:px-8">
+          <Empty className="w-full">
+            <EmptyHeader>
+              <EmptyTitle className="text-2xl">Rate limit reached</EmptyTitle>
+              <EmptyDescription>
+                GitHub API rate limits were hit.{" "}
+                {rateLimitTime
+                  ? `Try again after ${rateLimitTime}.`
+                  : "Try again in a few minutes."}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
               <Button asChild>
-                <A href="/api/auth/github/login">Login with GitHub</A>
+                <A href={requestedGitHubUrl}>Open in GitHub</A>
               </Button>
-            )}
-          </div>
+            </EmptyContent>
+          </Empty>
+          {!sessionUser && (
+            <Button asChild>
+              <A href="/api/auth/github/login">Login with GitHub</A>
+            </Button>
+          )}
         </div>
-      </BrowserContextMenu>
+      </div>
     )
   }
 
@@ -347,8 +345,7 @@ export default async function RepositoryPage({
     : null
 
   return (
-    <BrowserContextMenu triggerClassName="block min-h-screen w-full">
-      <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
         <Navbar initialUnreadNotifications={unreadNotifications} />
         <RepoKeyboardShortcuts enabled />
         <main className="mx-auto w-full max-w-7xl px-4 pt-22 pb-8 sm:pt-24 sm:pb-10 md:px-8">
@@ -825,7 +822,6 @@ export default async function RepositoryPage({
             />
           </div>
         </main>
-      </div>
-    </BrowserContextMenu>
+    </div>
   )
 }

@@ -8,8 +8,11 @@ import { THEME_IDS, getThemeMode } from "@/lib/themes"
 
 function ThemeProvider({
   children,
+  disableHotkeys = false,
   ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
+}: React.ComponentProps<typeof NextThemesProvider> & {
+  disableHotkeys?: boolean
+}) {
   return (
     <NextThemesProvider
       attribute="class"
@@ -19,7 +22,7 @@ function ThemeProvider({
       disableTransitionOnChange
       {...props}
     >
-      <ThemeHotkey />
+      <ThemeHotkey disabled={disableHotkeys} />
       <ThemeColorScheme />
       {children}
     </NextThemesProvider>
@@ -50,10 +53,12 @@ function isTypingTarget(target: EventTarget | null) {
   )
 }
 
-function ThemeHotkey() {
+function ThemeHotkey({ disabled = false }: { disabled?: boolean }) {
   const { toggleTheme } = useThemeTransition()
 
   React.useEffect(() => {
+    if (disabled) return
+
     function onKeyDown(event: KeyboardEvent) {
       if (event.defaultPrevented || event.repeat) {
         return
@@ -79,7 +84,7 @@ function ThemeHotkey() {
     return () => {
       window.removeEventListener("keydown", onKeyDown)
     }
-  }, [toggleTheme])
+  }, [disabled, toggleTheme])
 
   return null
 }
