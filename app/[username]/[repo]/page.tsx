@@ -83,7 +83,6 @@ type RepositoryTab =
   | "releases"
   | "settings"
 
-
 export async function generateMetadata({
   params,
 }: RepositoryPageProps): Promise<Metadata> {
@@ -244,32 +243,34 @@ export default async function RepositoryPage({
       : null
 
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar initialUnreadNotifications={[]} />
-        <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 px-4 pt-24 pb-10 md:px-8">
-          <Empty className="w-full">
-            <EmptyHeader>
-              <EmptyTitle className="text-2xl">Rate limit reached</EmptyTitle>
-              <EmptyDescription>
-                GitHub API rate limits were hit.{" "}
-                {rateLimitTime
-                  ? `Try again after ${rateLimitTime}.`
-                  : "Try again in a few minutes."}
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
+      <BrowserContextMenu triggerClassName="block min-h-screen w-full">
+        <div className="min-h-screen bg-background text-foreground">
+          <Navbar initialUnreadNotifications={[]} />
+          <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 px-4 pt-24 pb-10 md:px-8">
+            <Empty className="w-full">
+              <EmptyHeader>
+                <EmptyTitle className="text-2xl">Rate limit reached</EmptyTitle>
+                <EmptyDescription>
+                  GitHub API rate limits were hit.{" "}
+                  {rateLimitTime
+                    ? `Try again after ${rateLimitTime}.`
+                    : "Try again in a few minutes."}
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button asChild>
+                  <A href={requestedGitHubUrl}>Open in GitHub</A>
+                </Button>
+              </EmptyContent>
+            </Empty>
+            {!sessionUser && (
               <Button asChild>
-                <A href={requestedGitHubUrl}>Open in GitHub</A>
+                <A href="/api/auth/github/login">Login with GitHub</A>
               </Button>
-            </EmptyContent>
-          </Empty>
-          {!sessionUser && (
-            <Button asChild>
-              <A href="/api/auth/github/login">Login with GitHub</A>
-            </Button>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      </BrowserContextMenu>
     )
   }
 
@@ -312,12 +313,7 @@ export default async function RepositoryPage({
     repositoryLanguages,
   ] = await Promise.all([
     getGitHubRepositoryCommits(username, repo, sessionUser, resolvedBranch),
-    getGitHubRepositoryCommitCount(
-      username,
-      repo,
-      sessionUser,
-      resolvedBranch
-    ),
+    getGitHubRepositoryCommitCount(username, repo, sessionUser, resolvedBranch),
     getGitHubRepositoryDiscussions(username, repo, sessionUser),
     getGitHubRepositoryDiscussionCount(username, repo, sessionUser),
     getGitHubRepositoryIssues(username, repo, sessionUser),
@@ -345,7 +341,8 @@ export default async function RepositoryPage({
     : null
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <BrowserContextMenu triggerClassName="block min-h-screen w-full">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar initialUnreadNotifications={unreadNotifications} />
         <RepoKeyboardShortcuts enabled />
         <main className="mx-auto w-full max-w-7xl px-4 pt-22 pb-8 sm:pt-24 sm:pb-10 md:px-8">
@@ -357,11 +354,7 @@ export default async function RepositoryPage({
                     <BrowserContextMenu
                       triggerClassName="inline-flex"
                       menuChildren={
-                        <A
-                          href={ownerGitHubUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <A href={ownerGitHubUrl} target="_blank" rel="noreferrer">
                           <ContextMenuItem>
                             <SquareArrowOutUpRight />
                             Open in GitHub
@@ -435,9 +428,7 @@ export default async function RepositoryPage({
                       {repository.homepage.replace(/^https?:\/\//, "")}
                     </A>
                   ) : null}
-                  <span>
-                    Updated {formatRelativeDate(repository.updated_at)}
-                  </span>
+                  <span>Updated {formatRelativeDate(repository.updated_at)}</span>
                 </div>
                 {commitRef ? (
                   <div className="text-xs text-muted-foreground">
@@ -519,9 +510,7 @@ export default async function RepositoryPage({
                     </CardContent>
                   </Card>
                 ) : isOwnedEmptyRepository ? (
-                  <EmptyRepositoryInstructions
-                    remoteUrl={repository.html_url}
-                  />
+                  <EmptyRepositoryInstructions remoteUrl={repository.html_url} />
                 ) : (
                   <div className="min-w-0 space-y-4 lg:space-y-0">
                     <div className="min-w-0 space-y-4 lg:hidden">
@@ -696,9 +685,7 @@ export default async function RepositoryPage({
                                   {pullRequest.comments} comments
                                 </div>
                               </div>
-                              <Badge variant="outline">
-                                {pullRequest.state}
-                              </Badge>
+                              <Badge variant="outline">{pullRequest.state}</Badge>
                             </div>
                           </A>
                         ))}
@@ -782,9 +769,7 @@ export default async function RepositoryPage({
                                     {release.tag_name}
                                   </Badge>
                                   {release.prerelease ? (
-                                    <Badge variant="secondary">
-                                      Pre-release
-                                    </Badge>
+                                    <Badge variant="secondary">Pre-release</Badge>
                                   ) : null}
                                   {release.draft ? (
                                     <Badge variant="secondary">Draft</Badge>
@@ -822,6 +807,7 @@ export default async function RepositoryPage({
             />
           </div>
         </main>
-    </div>
+      </div>
+    </BrowserContextMenu>
   )
 }

@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useRef,
   useState,
   useCallback,
   type KeyboardEvent,
@@ -16,7 +15,6 @@ import Loader from "@/components/Loader"
 import RepositoryEngagementActions from "@/components/RepositoryEngagementActions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import VideoPlayer from "@/components/VideoPlayer"
-import { cn } from "@/lib/utils"
 import type { TrendingFeedPage } from "@/lib/trending-feed"
 
 type TrendingFeedProps = {
@@ -198,16 +196,12 @@ export default function TrendingFeed({
   const [nextCursor, setNextCursor] = useState(
     cached?.nextCursor ?? initialPage?.nextCursor ?? "1"
   )
-  const [hasMore, setHasMore] = useState(cached?.hasMore ?? initialPage?.hasMore ?? true)
+  const [hasMore, setHasMore] = useState(
+    cached?.hasMore ?? initialPage?.hasMore ?? true
+  )
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(!initialPage && !cached)
   const [initialLoadError, setInitialLoadError] = useState(false)
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const observerLockRef = useRef(false)
-  const nextCursorRef = useRef(cached?.nextCursor ?? initialPage?.nextCursor ?? "1")
-  const hasMoreRef = useRef(cached?.hasMore ?? initialPage?.hasMore ?? true)
-  const pageSizeRef = useRef(pageSize)
-  const loadTriggeredWhileVisibleRef = useRef(false)
 
   useEffect(() => {
     if (initialPage) {
@@ -221,11 +215,15 @@ export default function TrendingFeed({
   useEffect(() => {
     if (initialPage || cached) return
 
+    const controller = new AbortController()
     const fetchInitial = async () => {
       try {
         const response = await fetch(
           `/api/trending-feed?cursor=1&limit=${pageSize}`,
-          { cache: "no-store" }
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          }
         )
         if (!response.ok) {
           setInitialLoadError(true)
@@ -238,44 +236,51 @@ export default function TrendingFeed({
         setNextCursor(data.nextCursor ?? "1")
         setHasMore(data.hasMore)
       } catch {
+        if (controller.signal.aborted) return
         setInitialLoadError(true)
         setHasMore(false)
       } finally {
-        setIsInitialLoading(false)
+        if (!controller.signal.aborted) {
+          setIsInitialLoading(false)
+        }
       }
     }
 
-    fetchInitial()
-  }, [initialPage, pageSize])
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(() => {
+        void fetchInitial()
+      }, { timeout: 1500 })
+
+      return () => {
+        controller.abort()
+        window.cancelIdleCallback(idleId)
+      }
+    }
+
+    const timeoutId = globalThis.setTimeout(() => {
+      void fetchInitial()
+    }, 0)
+
+    return () => {
+      controller.abort()
+      clearTimeout(timeoutId)
+    }
+  }, [cached, initialPage, pageSize])
 
   useEffect(() => {
     clientFeedCache.set(cacheKey, { items, nextCursor, hasMore })
   }, [cacheKey, items, nextCursor, hasMore])
 
-  useEffect(() => {
-    nextCursorRef.current = nextCursor
-  }, [nextCursor])
-
-  useEffect(() => {
-    hasMoreRef.current = hasMore
-  }, [hasMore])
-
-  useEffect(() => {
-    pageSizeRef.current = pageSize
-  }, [pageSize])
-
   const loadMore = async () => {
-    const cursor = nextCursorRef.current
-    if (observerLockRef.current || !hasMoreRef.current || !cursor) {
+    if (isLoadingMore || !hasMore || !nextCursor) {
       return
     }
 
-    observerLockRef.current = true
     setIsLoadingMore(true)
 
     try {
       const response = await fetch(
-        `/api/trending-feed?cursor=${encodeURIComponent(cursor)}&limit=${pageSizeRef.current}`,
+        `/api/trending-feed?cursor=${encodeURIComponent(nextCursor)}&limit=${pageSize}`,
         { cache: "no-store" }
       )
       if (!response.ok) {
@@ -291,36 +296,9 @@ export default function TrendingFeed({
       // Leave the existing items in place and stop retry storms.
       setHasMore(false)
     } finally {
-      observerLockRef.current = false
       setIsLoadingMore(false)
     }
   }
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel || !hasMore || isInitialLoading) {
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const isIntersecting = entries.some((entry) => entry.isIntersecting)
-        if (!isIntersecting) {
-          loadTriggeredWhileVisibleRef.current = false
-          return
-        }
-
-        if (!loadTriggeredWhileVisibleRef.current) {
-          loadTriggeredWhileVisibleRef.current = true
-          void loadMore()
-        }
-      },
-      { rootMargin: "240px 0px", threshold: 0 }
-    )
-
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [hasMore, isInitialLoading])
 
   return (
     <section className="w-full space-y-4">
@@ -354,21 +332,27 @@ export default function TrendingFeed({
               </div>
             ) : null}
 
-            <div
-              ref={sentinelRef}
-              className={cn("px-6 py-5", !hasMore && "hidden")}
-            >
-              {isLoadingMore ? (
-                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader className="-ml-1 scale-90" />
-                  Loading more posts
-                </div>
-              ) : (
-                <div className="text-sm text-muted-foreground">
-                  Keep scrolling for more trending repos.
-                </div>
-              )}
-            </div>
+            {hasMore ? (
+              <div className="px-6 py-5">
+                <button
+                  type="button"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isLoadingMore}
+                  onClick={() => {
+                    void loadMore()
+                  }}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader className="-ml-1 scale-90" />
+                      Loading more posts
+                    </>
+                  ) : (
+                    "Load more posts"
+                  )}
+                </button>
+              </div>
+            ) : null}
           </>
         )}
       </div>

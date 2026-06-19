@@ -1,12 +1,8 @@
 import type { SessionUser } from "@/lib/session"
 import {
-  generateRepositorySummaries,
-  type RepositorySummaryInput,
-} from "@/lib/openrouter"
-import {
-  extractSummarySource,
+  isBoilerplateBlock,
   normalizeSummary,
-  SUMMARY_CACHE_VERSION,
+  stripReadmeMarkup,
 } from "@/lib/readme-summary"
 import {
   getGitHubProfileSummary,
@@ -15,7 +11,6 @@ import {
   isGitHubRepositoryStarred,
   type GitHubRepository,
   type GitHubRepositoryReadmeData,
-  type GitHubProfile,
 } from "@/lib/github"
 
 export type TrendingFeedItem = {
@@ -46,8 +41,6 @@ export type TrendingFeedPage = {
   items: TrendingFeedItem[]
   nextCursor: string | null
 }
-
-const summaryCache = new Map<string, string>()
 
 function isAbsoluteUrl(value: string) {
   return /^[a-z][a-z\d+\-.]*:/i.test(value)
@@ -133,8 +126,7 @@ function findReadmeMedia(markdown: string) {
 
 function resolveRelativeMediaUrl(
   value: string,
-  repository: GitHubRepository,
-  readme?: GitHubRepositoryReadmeData | null
+  repository: GitHubRepository
 ) {
   const branch = repository.default_branch ?? "main"
   const [basePath] = value.split("#")
@@ -173,7 +165,7 @@ function buildMedia(
 
   const resolvedUrl = isAbsoluteUrl(media.url)
     ? media.url
-    : resolveRelativeMediaUrl(media.url, repository, readme)
+    : resolveRelativeMediaUrl(media.url, repository)
 
   if (!resolvedUrl) {
     return null
@@ -186,87 +178,20 @@ function buildMedia(
   }
 }
 
-function fallbackSummary(
-  repository: GitHubRepository,
-  ownerName: string,
+export function buildReadmeCaption(
   readme: GitHubRepositoryReadmeData | null
 ) {
-  const readmeSummary = readme?.markdown
-    ? extractSummarySource(readme.markdown)
-    : ""
-  const description = repository.description?.trim() ?? ""
-  const text =
-    description ||
-    readmeSummary ||
-    `${ownerName} maintains ${repository.name}, a ${repository.language ?? "general"} repository.`
-
-  return normalizeSummary(text)
-}
-
-async function buildSummaryMap(
-  sessionUser: SessionUser | null,
-  repositories: GitHubRepository[],
-  ownerProfiles: Map<string, GitHubProfile>,
-  readmes: Map<number, GitHubRepositoryReadmeData | null>
-) {
-  const pendingInputs: RepositorySummaryInput[] = []
-  const pendingKeys: string[] = []
-
-  for (const repository of repositories) {
-    const readme = readmes.get(repository.id) ?? null
-    const cacheKey = `${SUMMARY_CACHE_VERSION}:${repository.owner.login}/${repository.name}:${readme?.sha ?? repository.updated_at}`
-    const cached = summaryCache.get(cacheKey)
-    if (cached) continue
-
-    pendingInputs.push({
-      description: repository.description,
-      forks: repository.forks_count,
-      fullName: repository.full_name ?? `${repository.owner.login}/${repository.name}`,
-      hasMedia: Boolean(buildMedia(repository, readme)),
-      key: cacheKey,
-      language: repository.language,
-      ownerName:
-        ownerProfiles.get(repository.owner.login)?.name ??
-        ownerProfiles.get(repository.owner.login)?.login ??
-        repository.owner.login,
-      readme: readme?.markdown
-        ? extractSummarySource(readme.markdown) || repository.description
-        : repository.description,
-      stars: repository.stargazers_count,
-      topics: repository.topics ?? [],
-    })
-    pendingKeys.push(cacheKey)
+  if (!readme?.markdown) {
+    return ""
   }
 
-  if (pendingInputs.length > 0) {
-    const generated = await generateRepositorySummaries(pendingInputs)
-    for (const key of pendingKeys) {
-      const summary =
-        generated.get(key) ??
-        pendingInputs.find((entry) => entry.key === key)?.readme ??
-        ""
-      if (summary) {
-        summaryCache.set(key, normalizeSummary(summary))
-      }
-    }
-  }
+  const captionLines = stripReadmeMarkup(readme.markdown)
+    .replace(/\r\n/g, "\n")
+    .split(/\n+/)
+    .map((line) => normalizeSummary(line))
+    .filter((line) => line.length > 0 && !isBoilerplateBlock(line))
 
-  const summaryMap = new Map<string, string>()
-  for (const repository of repositories) {
-    const readme = readmes.get(repository.id) ?? null
-    const cacheKey = `${SUMMARY_CACHE_VERSION}:${repository.owner.login}/${repository.name}:${readme?.sha ?? repository.updated_at}`
-    const ownerName =
-      ownerProfiles.get(repository.owner.login)?.name ??
-      ownerProfiles.get(repository.owner.login)?.login ??
-      repository.owner.login
-    summaryMap.set(
-      cacheKey,
-      summaryCache.get(cacheKey) ??
-        fallbackSummary(repository, ownerName, readme)
-    )
-  }
-
-  return summaryMap
+  return captionLines.slice(0, 3).join("\n")
 }
 
 const feedCache = new Map<string, { data: TrendingFeedPage; timestamp: number }>()
@@ -330,47 +255,41 @@ export async function getTrendingFeedPage(
   const ownerProfiles = new Map(ownerProfilesEntries)
   const readmes = new Map(readmeEntries)
   const starredByRepositoryId = new Map(starredEntries)
-  const summaries = await buildSummaryMap(
-    sessionUser,
-    repositories,
-    ownerProfiles,
-    readmes
-  )
 
   const currentUserLogin = sessionUser?.login?.toLowerCase() ?? null
-  const items = repositories.map((repository) => {
+  const items = repositories.flatMap((repository) => {
     const readme = readmes.get(repository.id) ?? null
+    const summary = buildReadmeCaption(readme)
+    if (!readme || !summary) {
+      return []
+    }
+
     const profile = ownerProfiles.get(repository.owner.login)
-    const summaryKey = `${repository.owner.login}/${repository.name}:${readme?.sha ?? repository.updated_at}`
     const media = buildMedia(repository, readme)
 
-    return {
-      author: {
-        avatarUrl:
-          profile?.avatar_url ?? repository.owner.avatar_url ?? null,
-        login: repository.owner.login,
-        name: profile?.name ?? profile?.login ?? repository.owner.login,
-        profileUrl: `/${repository.owner.login}`,
+    return [
+      {
+        author: {
+          avatarUrl:
+            profile?.avatar_url ?? repository.owner.avatar_url ?? null,
+          login: repository.owner.login,
+          name: profile?.name ?? profile?.login ?? repository.owner.login,
+          profileUrl: `/${repository.owner.login}`,
+        },
+        canFork:
+          Boolean(sessionUser?.login) &&
+          repository.owner.login.toLowerCase() !== currentUserLogin,
+        cloneUrl: repository.clone_url ?? `${repository.html_url}.git`,
+        forkCount: repository.forks_count,
+        isStarred: starredByRepositoryId.get(repository.id) ?? false,
+        media: media && media.url ? media : null,
+        repoName: repository.name,
+        repoUrl: `/${repository.full_name ?? `${repository.owner.login}/${repository.name}`}`,
+        starCount: repository.stargazers_count,
+        summary,
+        updatedAt: repository.updated_at,
       },
-      canFork:
-        Boolean(sessionUser?.login) &&
-        repository.owner.login.toLowerCase() !== currentUserLogin,
-      cloneUrl: repository.clone_url ?? `${repository.html_url}.git`,
-      forkCount: repository.forks_count,
-      isStarred: starredByRepositoryId.get(repository.id) ?? false,
-      media: media && media.url ? media : null,
-      repoName: repository.name,
-      repoUrl: `/${repository.full_name ?? `${repository.owner.login}/${repository.name}`}`,
-      starCount: repository.stargazers_count,
-      summary:
-        summaries.get(summaryKey) ??
-        fallbackSummary(
-          repository,
-          profile?.name ?? profile?.login ?? repository.owner.login,
-          readme
-        ),
-      updatedAt: repository.updated_at,
-    }
+    ]
   })
 
   const hasMore = repositories.length === perPage

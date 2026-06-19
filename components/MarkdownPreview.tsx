@@ -34,10 +34,12 @@ function isImageUrl(value: string) {
 }
 
 function isBadgeImage(value: string) {
+  const lowerValue = value.toLowerCase()
+
   return (
-    value.includes("img.shields.io") ||
-    value.includes("/badge/") ||
-    value.includes("badgen.net")
+    lowerValue.includes("img.shields.io") ||
+    lowerValue.includes("badgen.net") ||
+    lowerValue.includes("badge")
   )
 }
 
@@ -303,11 +305,11 @@ function SmartMedia({
       ? hasExplicitSize
         ? "inline-block max-w-[min(85vw,100%)] align-middle object-contain"
         : "inline-block max-h-8 w-auto align-middle object-contain"
-      : isBadge
+    : isBadge
         ? "my-1 inline-block h-5 w-auto align-middle object-contain"
         : hasExplicitSize
-          ? "my-4 block h-auto w-[min(85vw,100%)] max-w-full rounded-xl object-contain"
-          : "my-4 block h-auto max-h-[32rem] w-[min(85vw,100%)] max-w-full rounded-xl object-contain"
+          ? "my-4 block h-auto w-[min(85vw,100%)] max-w-full object-contain"
+          : "my-4 block h-auto max-h-[32rem] w-[min(85vw,100%)] max-w-full object-contain"
 
   return (
     <Image

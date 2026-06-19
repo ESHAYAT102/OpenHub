@@ -1,7 +1,7 @@
 "use client"
 
 import type { PropsWithChildren, ReactNode } from "react"
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ArrowRight, RotateCw } from "lucide-react"
@@ -23,17 +23,15 @@ type BrowserContextMenuProps = PropsWithChildren<{
 }>
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const mql = window.matchMedia("(pointer: coarse)")
-    setIsMobile(mql.matches)
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mql.addEventListener("change", onChange)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
-
-  return isMobile
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      const mql = window.matchMedia("(pointer: coarse)")
+      mql.addEventListener("change", onStoreChange)
+      return () => mql.removeEventListener("change", onStoreChange)
+    },
+    () => window.matchMedia("(pointer: coarse)").matches,
+    () => false
+  )
 }
 
 export default function BrowserContextMenu({
@@ -64,7 +62,7 @@ export default function BrowserContextMenu({
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger className={triggerClassName}>
+      <ContextMenuTrigger asChild className={triggerClassName}>
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent>

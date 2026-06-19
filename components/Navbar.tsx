@@ -1,11 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
 import Link from "next/link"
 
 import A from "@/components/A"
 import { useAuth } from "@/components/AuthProvider"
-import BrowserContextMenu from "@/components/BrowserContextMenu"
 import CommandPalette from "@/components/CommandPalette"
 import NotificationsDrawer from "@/components/NotificationsDrawer"
 import { Button } from "@/components/ui/button"
@@ -18,7 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ContextMenuItem } from "@/components/ui/context-menu"
 import { useThemeTransition } from "@/hooks/use-theme-transition"
 import type { GitHubNotification } from "@/lib/github"
 import { getThemeLabel, getThemeMode, type ThemeId } from "@/lib/themes"
@@ -26,13 +24,10 @@ import {
   Settings,
   LogOutIcon,
   User,
-  Copy,
   Moon,
   Plus,
   Command,
   Sun,
-  SquareArrowOutUpRight,
-  BookMarked,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -52,11 +47,11 @@ export default function Page({
   const [isCommandOpen, setIsCommandOpen] = useState(false)
   const [commandInitialValue, setCommandInitialValue] = useState("")
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
 
   const profileUrl = useMemo(
     () => (user?.login ? `/${user.login}` : "/"),
@@ -68,10 +63,6 @@ export default function Page({
     user?.login?.trim().charAt(0).toUpperCase() ||
     user?.email?.trim().charAt(0).toUpperCase() ||
     "O"
-
-  const handleCopyUrl = async () => {
-    await navigator.clipboard.writeText(window.location.href)
-  }
 
   const handleCommandOpenChange = (nextOpen: boolean) => {
     setIsCommandOpen(nextOpen)
@@ -109,7 +100,6 @@ export default function Page({
     "light") as ThemeId
   const isDarkTheme = getThemeMode(currentTheme) === "dark"
   const authUrl = "/api/auth/github/login?callbackUrl=/"
-
   return (
     <nav className="fixed z-50 flex w-full items-center justify-between border-b border-foreground/10 bg-background/60 px-4 py-4 md:px-8 supports-backdrop-filter:backdrop-blur">
       <CommandPalette
@@ -120,104 +110,39 @@ export default function Page({
         initialValue={commandInitialValue}
       />
       <div className="flex items-center">
-        {disableBrowserInteractions ? (
-          <Link
-            href="/"
-            prefetch={false}
-            className="flex items-center gap-2 font-bold"
-          >
-            <Image className="h-6" src="/favicon.ico" alt="Logo"></Image>
-            <span>Xenon</span>
-          </Link>
-        ) : (
-          <BrowserContextMenu
-            triggerClassName="flex items-center justify-center"
-            menuChildren={
-              <>
-                <A href="/" target="_blank">
-                  <ContextMenuItem>
-                    <SquareArrowOutUpRight />
-                    Open in new tab
-                  </ContextMenuItem>
-                </A>
-                <A href="/ESHAYAT102/Xenon">
-                  <ContextMenuItem>
-                    <BookMarked />
-                    Open repository
-                  </ContextMenuItem>
-                </A>
-                <ContextMenuItem onClick={handleCopyUrl}>
-                  <Copy />
-                  Copy URL
-                </ContextMenuItem>
-              </>
-            }
-          >
-            <Link
-              href="/"
-              prefetch={false}
-              className="flex items-center gap-2 font-bold"
-            >
-              <Image className="h-6" src="/favicon.ico" alt="Logo"></Image>
-              <span>Xenon</span>
-            </Link>
-          </BrowserContextMenu>
-        )}
+        <Link
+          href="/"
+          prefetch={false}
+          className="flex items-center gap-2 font-bold"
+        >
+          <Image className="h-6" src="/favicon.ico" alt="Logo"></Image>
+          <span>Xenon</span>
+        </Link>
       </div>
       <div className="flex items-center gap-2">
-        {disableBrowserInteractions ? (
-          <>
-            <Button
-              className="rounded-full mr-2"
-              variant="ghost"
-              title="Open command palette"
-              onClick={() => {
-                setCommandInitialValue("")
-                setIsCommandOpen(true)
-              }}
-            >
-              <Command />
-            </Button>
-            {user ? (
-              <Button
-                asChild
-                className="hidden cursor-default rounded-full sm:inline-flex"
-                variant="ghost"
-                title="Create new repository"
-              >
-                <A href={newRepositoryUrl}>
-                  <Plus />
-                </A>
-              </Button>
-            ) : null}
-          </>
-        ) : (
-          <BrowserContextMenu triggerClassName="inline-flex">
-            <Button
-              className="mr-2 rounded-full"
-              variant="ghost"
-              title="Open command palette"
-              onClick={() => {
-                setCommandInitialValue("")
-                setIsCommandOpen(true)
-              }}
-            >
-              <Command />
-            </Button>
-            {user ? (
-              <Button
-                asChild
-                className="hidden cursor-default rounded-full sm:inline-flex"
-                variant="ghost"
-                title="Create new repository"
-              >
-                <A href={newRepositoryUrl}>
-                  <Plus />
-                </A>
-              </Button>
-            ) : null}
-          </BrowserContextMenu>
-        )}
+        <Button
+          className="mr-2 rounded-full"
+          variant="ghost"
+          title="Open command palette"
+          onClick={() => {
+            setCommandInitialValue("")
+            setIsCommandOpen(true)
+          }}
+        >
+          <Command />
+        </Button>
+        {user ? (
+          <Button
+            asChild
+            className="hidden cursor-default rounded-full sm:inline-flex"
+            variant="ghost"
+            title="Create new repository"
+          >
+            <A href={newRepositoryUrl}>
+              <Plus />
+            </A>
+          </Button>
+        ) : null}
         <div className="items-center">
           {user && (
             <>
@@ -243,11 +168,7 @@ export default function Page({
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="rounded-full"
-                variant="ghost"
-                size="icon"
-              >
+              <Button className="rounded-full" variant="ghost" size="icon">
                 <Avatar size="sm">
                   <AvatarImage
                     src={user.image ?? undefined}
