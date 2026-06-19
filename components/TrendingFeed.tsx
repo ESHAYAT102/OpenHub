@@ -14,6 +14,7 @@ import Image from "@/components/Image"
 import Loader from "@/components/Loader"
 import RepositoryEngagementActions from "@/components/RepositoryEngagementActions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import VideoPlayer from "@/components/VideoPlayer"
 import type { TrendingFeedPage } from "@/lib/trending-feed"
 
@@ -334,9 +335,9 @@ export default function TrendingFeed({
 
             {hasMore ? (
               <div className="px-6 py-5">
-                <button
-                  type="button"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
+                <Button
+                  variant="outline"
+                  className="w-full"
                   disabled={isLoadingMore}
                   onClick={() => {
                     void loadMore()
@@ -350,7 +351,7 @@ export default function TrendingFeed({
                   ) : (
                     "Load more posts"
                   )}
-                </button>
+                </Button>
               </div>
             ) : null}
           </>
