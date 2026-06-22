@@ -151,7 +151,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
           {!settings.canEditProfile ? (
             <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
               Editing GitHub profile settings needs the `user` OAuth scope.
-              Reconnect your GitHub account once to upgrade the token.
+              If you signed in before this update, sign out and back in once
+              to upgrade the token.
               <div className="mt-3">
                 <Button asChild variant="outline" className="rounded-xl">
                   <A href="/api/auth/github/login?callbackUrl=/settings">

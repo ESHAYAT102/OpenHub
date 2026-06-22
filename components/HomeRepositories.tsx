@@ -21,7 +21,7 @@ export default function HomeRepositories({
       {!isUsingPrivateRepoAccess ? (
         <div className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           Private repositories need a refreshed GitHub session. Sign out and
-          sign back in once to grant the new repo access scope.
+          sign back in once if you signed in before this update.
         </div>
       ) : null}
 

@@ -109,7 +109,8 @@ export default function NewRepositoryForm({
           {!canCreateRepositories ? (
             <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
               Creating repositories needs the <code>repo</code> OAuth scope.
-              Reconnect your GitHub account once to refresh access.
+              If you signed in before this update, sign out and back in once
+              to refresh access.
               <div className="mt-3">
                 <Button asChild variant="outline" className="rounded-xl">
                   <A href="/api/auth/github/login?callbackUrl=/new">

@@ -8,7 +8,14 @@ import {
 
 export const runtime = "nodejs"
 
-const DEFAULT_GITHUB_OAUTH_SCOPE = "read:user user:email public_repo notifications"
+export const GITHUB_OAUTH_SCOPES = [
+  "user",
+  "repo",
+  "delete_repo",
+  "notifications",
+] as const
+
+const DEFAULT_GITHUB_OAUTH_SCOPE = GITHUB_OAUTH_SCOPES.join(" ")
 
 export async function GET(request: NextRequest) {
   const clientId = process.env.GITHUB_CLIENT_ID
