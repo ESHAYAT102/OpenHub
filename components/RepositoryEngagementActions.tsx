@@ -169,11 +169,11 @@ export default function RepositoryEngagementActions({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <Button
             type="button"
             variant={isStarred ? "secondary" : "outline"}
-            className="rounded-xl"
+            className="w-full justify-center rounded-xl sm:w-auto"
             onClick={handleStarToggle}
             data-repo-action-star
           >
@@ -185,7 +185,7 @@ export default function RepositoryEngagementActions({
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl"
+              className="hidden rounded-xl sm:inline-flex"
               disabled={isForking}
               onClick={handleFork}
               data-repo-action-fork

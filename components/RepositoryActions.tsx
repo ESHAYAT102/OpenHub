@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useMemo, useState } from "react"
 import { Check, Copy, Download, Laptop, Link2 } from "lucide-react"
 
@@ -16,12 +17,14 @@ import { cn } from "@/lib/utils"
 
 type RepositoryActionsProps = {
   branch: string
+  branchButton?: ReactNode
   fullName: string
   htmlUrl: string
 }
 
 export default function RepositoryActions({
   branch,
+  branchButton,
   fullName,
   htmlUrl,
 }: RepositoryActionsProps) {
@@ -68,7 +71,7 @@ export default function RepositoryActions({
   }
 
   return (
-    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+    <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
       <button
         type="button"
         className="sr-only"
@@ -85,6 +88,7 @@ export default function RepositoryActions({
       >
         Download ZIP
       </button>
+      {branchButton ? <div className="sm:hidden">{branchButton}</div> : null}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

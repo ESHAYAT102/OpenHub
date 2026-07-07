@@ -446,14 +446,16 @@ export default async function RepositoryPage({
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                <RepositoryBranchSelector
-                  branches={branches}
-                  commitRef={commitRef}
-                  currentBranch={resolvedBranch}
-                  owner={username}
-                  repo={repo}
-                  selectedPath={path}
-                />
+                <div className="hidden sm:block">
+                  <RepositoryBranchSelector
+                    branches={branches}
+                    commitRef={commitRef}
+                    currentBranch={resolvedBranch}
+                    owner={username}
+                    repo={repo}
+                    selectedPath={path}
+                  />
+                </div>
                 <RepositoryEngagementActions
                   canFork={sessionUser?.login !== repository.owner.login}
                   initialForkCount={repository.forks_count}
@@ -464,6 +466,16 @@ export default async function RepositoryPage({
                 />
                 <RepositoryActions
                   branch={contentRef}
+                  branchButton={
+                    <RepositoryBranchSelector
+                      branches={branches}
+                      commitRef={commitRef}
+                      currentBranch={resolvedBranch}
+                      owner={username}
+                      repo={repo}
+                      selectedPath={path}
+                    />
+                  }
                   fullName={
                     repository.full_name ??
                     `${repository.owner.login}/${repository.name}`
