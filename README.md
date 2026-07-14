@@ -18,7 +18,7 @@ Tech stack
 - React 19
 - Tailwind CSS + shadcn/ui
 - GitHub OAuth with encrypted first-party session cookies
-- cmdk, sonner, react-markdown
+- cmdk, react-markdown
 
 Getting started
 
