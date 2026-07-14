@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
-import { useSmoothCorners } from "@lisse/react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import {
   Bell,
@@ -145,11 +144,6 @@ export default function CommandPalette({
   const [recentCommands, setRecentCommands] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
-  useSmoothCorners(
-    dialogRef,
-    { radius: 24, smoothing: 1 },
-    { autoEffects: true, wrapperRef: dialogRef }
-  )
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchResults, setSearchResults] = useState<{
     repositories: SearchRepositoryResult[]

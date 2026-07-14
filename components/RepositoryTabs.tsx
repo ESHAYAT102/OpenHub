@@ -27,6 +27,7 @@ type RepositoryTabsProps = {
   currentTab: RepositoryTab
   discussionCount: number
   hasDiscussions: boolean
+  hasReleases: boolean
   issueCount: number
   latestRelease: { tag_name: string } | null
   pullRequestCount: number
@@ -48,6 +49,7 @@ export default function RepositoryTabs({
   currentTab,
   discussionCount,
   hasDiscussions,
+  hasReleases,
   issueCount,
   latestRelease,
   pullRequestCount,
@@ -141,20 +143,22 @@ export default function RepositoryTabs({
               {pullRequestCount}
             </span>
           </button>
-          <button
-            onClick={() => handleTabClick("releases")}
-            className={tabLinkClass(activeTab === "releases")}
-            data-repo-tab
-            data-repo-tab-releases
-          >
-            <Tag className="size-4" />
-            Releases
-            {latestRelease && (
-              <span className="text-xs text-muted-foreground">
-                {latestRelease.tag_name}
-              </span>
-            )}
-          </button>
+          {hasReleases && (
+            <button
+              onClick={() => handleTabClick("releases")}
+              className={tabLinkClass(activeTab === "releases")}
+              data-repo-tab
+              data-repo-tab-releases
+            >
+              <Tag className="size-4" />
+              Releases
+              {latestRelease && (
+                <span className="text-xs text-muted-foreground">
+                  {latestRelease.tag_name}
+                </span>
+              )}
+            </button>
+          )}
           {canManageRepository && (
             <button
               onClick={() => handleTabClick("settings")}
@@ -186,9 +190,11 @@ export default function RepositoryTabs({
           <div className={activeTab === "pulls" ? "block" : "hidden"}>
             {pullsContent}
           </div>
-          <div className={activeTab === "releases" ? "block" : "hidden"}>
-            {releasesContent}
-          </div>
+          {hasReleases && (
+            <div className={activeTab === "releases" ? "block" : "hidden"}>
+              {releasesContent}
+            </div>
+          )}
           <div className={activeTab === "settings" ? "block" : "hidden"}>
             {settingsContent}
           </div>

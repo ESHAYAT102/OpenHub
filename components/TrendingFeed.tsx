@@ -15,7 +15,6 @@ import Loader from "@/components/Loader"
 import RepositoryEngagementActions from "@/components/RepositoryEngagementActions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Smooth } from "@/components/ui/smooth-corners"
 import VideoPlayer from "@/components/VideoPlayer"
 import type { TrendingFeedPage } from "@/lib/trending-feed"
 
@@ -310,56 +309,54 @@ export default function TrendingFeed({
         </h2>
       </div>
 
-      <Smooth radius={24}>
-        <div className="overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
-          {isInitialLoading ? (
-            <TrendingFeedSkeleton />
-          ) : initialLoadError ? (
-            <div className="px-6 py-16 text-center text-muted-foreground">
-              Failed to load trending repositories.
+      <div className="overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
+        {isInitialLoading ? (
+          <TrendingFeedSkeleton />
+        ) : initialLoadError ? (
+          <div className="px-6 py-16 text-center text-muted-foreground">
+            Failed to load trending repositories.
+          </div>
+        ) : (
+          <>
+            <div className="divide-y divide-border/70">
+              {items.map((item) => (
+                <TrendingFeedPost
+                  key={`${item.author.login}/${item.repoName}`}
+                  item={item}
+                />
+              ))}
             </div>
-          ) : (
-            <>
-              <div className="divide-y divide-border/70">
-                {items.map((item) => (
-                  <TrendingFeedPost
-                    key={`${item.author.login}/${item.repoName}`}
-                    item={item}
-                  />
-                ))}
+
+            {items.length === 0 ? (
+              <div className="px-6 py-16 text-center text-muted-foreground">
+                No trending repositories right now.
               </div>
+            ) : null}
 
-              {items.length === 0 ? (
-                <div className="px-6 py-16 text-center text-muted-foreground">
-                  No trending repositories right now.
-                </div>
-              ) : null}
-
-              {hasMore ? (
-                <div className="px-6 py-5">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    disabled={isLoadingMore}
-                    onClick={() => {
-                      void loadMore()
-                    }}
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <Loader className="-ml-1 scale-90" />
-                        Loading more posts
-                      </>
-                    ) : (
-                      "Load more posts"
-                    )}
-                  </Button>
-                </div>
-              ) : null}
-            </>
-          )}
-        </div>
-      </Smooth>
+            {hasMore ? (
+              <div className="px-6 py-5">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  disabled={isLoadingMore}
+                  onClick={() => {
+                    void loadMore()
+                  }}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader className="-ml-1 scale-90" />
+                      Loading more posts
+                    </>
+                  ) : (
+                    "Load more posts"
+                  )}
+                </Button>
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
     </section>
   )
 }

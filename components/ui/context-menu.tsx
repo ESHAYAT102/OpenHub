@@ -5,7 +5,6 @@ import { ContextMenu as ContextMenuPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
-import { Smooth } from "@/components/ui/smooth-corners"
 
 function ContextMenu({
   ...props
@@ -67,16 +66,14 @@ function ContextMenuContent({
 }) {
   return (
     <ContextMenuPrimitive.Portal>
-      <Smooth radius={24}>
-        <ContextMenuPrimitive.Content
-          data-slot="context-menu-content"
-          className={cn(
-            "z-50 max-h-(--radix-context-menu-content-available-height) min-w-48 origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-3xl bg-popover/60 p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 supports-backdrop-filter:backdrop-blur-sm",
-            className
-          )}
-          {...props}
-        />
-      </Smooth>
+      <ContextMenuPrimitive.Content
+        data-slot="context-menu-content"
+        className={cn(
+          "z-50 max-h-(--radix-context-menu-content-available-height) min-w-48 origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-3xl bg-popover/60 p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 supports-backdrop-filter:backdrop-blur-sm",
+          className
+        )}
+        {...props}
+      />
     </ContextMenuPrimitive.Portal>
   )
 }
@@ -133,16 +130,14 @@ function ContextMenuSubContent({
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.SubContent>) {
   return (
-    <Smooth radius={24}>
-      <ContextMenuPrimitive.SubContent
-        data-slot="context-menu-sub-content"
-        className={cn(
-          "z-50 min-w-32 origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-3xl bg-popover/60 p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 supports-backdrop-filter:backdrop-blur-sm",
-          className
-        )}
-        {...props}
-      />
-    </Smooth>
+    <ContextMenuPrimitive.SubContent
+      data-slot="context-menu-sub-content"
+      className={cn(
+        "z-50 min-w-32 origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-3xl bg-popover/60 p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 supports-backdrop-filter:backdrop-blur-sm",
+        className
+      )}
+      {...props}
+    />
   )
 }
 

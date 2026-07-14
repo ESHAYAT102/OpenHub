@@ -1,20 +1,17 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { Smooth } from "@/components/ui/smooth-corners"
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <Smooth radius={24}>
-      <div
-        data-slot="card"
-        className={cn(
-          "rounded-2xl border bg-card text-card-foreground shadow-sm",
-          className
-        )}
-        {...props}
-      />
-    </Smooth>
+    <div
+      data-slot="card"
+      className={cn(
+        "rounded-2xl border bg-card text-card-foreground shadow-sm",
+        className
+      )}
+      {...props}
+    />
   )
 }
 

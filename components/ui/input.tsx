@@ -6,7 +6,6 @@ import BrowserContextMenu from "@/components/BrowserContextMenu"
 import { ContextMenuGroup, ContextMenuItem } from "@/components/ui/context-menu"
 import { ClipboardPaste, Copy, Scissors, Trash } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Smooth } from "@/components/ui/smooth-corners"
 
 const Input = React.forwardRef<
   HTMLInputElement,
@@ -101,20 +100,18 @@ const Input = React.forwardRef<
           </>
         }
       >
-        <Smooth radius={12}>
-          <input
-            ref={setRefs}
-            type={type}
-            data-slot="input"
-            disabled={disabled}
-            readOnly={readOnly}
-            className={cn(
-              "flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40",
-              className
-            )}
-            {...props}
-          />
-        </Smooth>
+        <input
+          ref={setRefs}
+          type={type}
+          data-slot="input"
+          disabled={disabled}
+          readOnly={readOnly}
+          className={cn(
+            "flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40",
+            className
+          )}
+          {...props}
+        />
       </BrowserContextMenu>
     )
   }

@@ -294,7 +294,7 @@ export default async function RepositoryPage({
               (tab === "discussions" && repository.has_discussions) ||
               tab === "issues" ||
               tab === "pulls" ||
-              tab === "releases" ||
+              (tab === "releases" && repository.has_downloads) ||
               (tab === "settings" && canManageRepository)
             ? tab
             : "code"
@@ -320,7 +320,9 @@ export default async function RepositoryPage({
     getGitHubRepositoryIssueCount(username, repo, sessionUser),
     getGitHubRepositoryPullRequests(username, repo, sessionUser),
     getGitHubRepositoryPullRequestCount(username, repo, sessionUser),
-    getGitHubRepositoryReleases(username, repo, sessionUser),
+    repository.has_downloads
+      ? getGitHubRepositoryReleases(username, repo, sessionUser)
+      : Promise.resolve([]),
     getGitHubRepositoryLanguages(username, repo, sessionUser),
   ])
   const latestRelease = releases[0] ?? null
@@ -394,12 +396,14 @@ export default async function RepositoryPage({
                     </BrowserContextMenu>
                   </h1>
                   <Badge variant="outline">
-                    {repository.private ? (
-                      <EyeOff className="size-3.5" />
-                    ) : (
-                      <Eye className="size-3.5" />
-                    )}
-                    {repository.private ? "Private" : "Public"}
+                    <span className="inline-flex -translate-y-px items-center gap-1">
+                      {repository.private ? (
+                        <EyeOff className="size-3.5" />
+                      ) : (
+                        <Eye className="size-3.5" />
+                      )}
+                      {repository.private ? "Private" : "Public"}
+                    </span>
                   </Badge>
                   {repository.fork ? (
                     <Badge variant="outline">
@@ -491,6 +495,7 @@ export default async function RepositoryPage({
               currentTab={currentTab}
               discussionCount={discussionCount}
               hasDiscussions={repository.has_discussions}
+              hasReleases={repository.has_downloads}
               issueCount={issueCount}
               latestRelease={latestRelease}
               pullRequestCount={pullRequestCount}

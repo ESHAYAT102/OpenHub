@@ -173,7 +173,7 @@ export default function RepositoryEngagementActions({
           <Button
             type="button"
             variant={isStarred ? "secondary" : "outline"}
-            className="w-full justify-center rounded-xl sm:w-auto"
+            className="w-full justify-center rounded-xl border-border sm:w-auto"
             onClick={handleStarToggle}
             data-repo-action-star
           >
