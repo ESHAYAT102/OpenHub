@@ -148,7 +148,7 @@ export default function CommandPalette({
   useSmoothCorners(
     dialogRef,
     { radius: 24, smoothing: 1 },
-    { autoEffects: false }
+    { autoEffects: true, wrapperRef: dialogRef }
   )
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchResults, setSearchResults] = useState<{
