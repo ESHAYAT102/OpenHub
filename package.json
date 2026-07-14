@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@lisse/react": "^0.5.2",
     "@pierre/diffs": "^1.2.10",
     "@react-symbols/icons": "^1.4.1",
     "@web-kits/audio": "^0.1.0",

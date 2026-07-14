@@ -60,6 +60,7 @@ export default function RepositorySettingsForm({
       repository.default_branch ?? availableBranches[0]?.name ?? "main",
     description: repository.description ?? "",
     has_discussions: repository.has_discussions,
+    has_downloads: repository.has_downloads,
     has_wiki: repository.has_wiki,
     homepage: repository.homepage ?? "",
     name: repository.name,
@@ -79,6 +80,7 @@ export default function RepositorySettingsForm({
         default_branch: formState.defaultBranch,
         description: formState.description || null,
         has_discussions: formState.has_discussions,
+        has_downloads: formState.has_downloads,
         has_wiki: formState.has_wiki,
         homepage: formState.homepage || null,
         name: formState.name.trim(),
@@ -116,6 +118,7 @@ export default function RepositorySettingsForm({
       defaultBranch: nextRepository.default_branch ?? formState.defaultBranch,
       description: nextRepository.description ?? "",
       has_discussions: nextRepository.has_discussions,
+      has_downloads: nextRepository.has_downloads,
       has_wiki: nextRepository.has_wiki,
       homepage: nextRepository.homepage ?? "",
       name: nextRepository.name,
@@ -397,6 +400,24 @@ export default function RepositorySettingsForm({
                     className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     Wiki
+                  </label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="has_downloads"
+                    checked={formState.has_downloads}
+                    onCheckedChange={(checked) =>
+                      setFormState((current) => ({
+                        ...current,
+                        has_downloads: checked === true,
+                      }))
+                    }
+                  />
+                  <label
+                    htmlFor="has_downloads"
+                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Releases
                   </label>
                 </div>
               </FieldContent>

@@ -1,17 +1,20 @@
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { Smooth } from "@/components/ui/smooth-corners"
 
 function Empty({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      data-slot="empty"
-      className={cn(
-        "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-dashed p-12 text-center text-balance",
-        className
-      )}
-      {...props}
-    />
+    <Smooth radius={24}>
+      <div
+        data-slot="empty"
+        className={cn(
+          "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-dashed p-12 text-center text-balance",
+          className
+        )}
+        {...props}
+      />
+    </Smooth>
   )
 }
 
@@ -46,12 +49,14 @@ function EmptyMedia({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof emptyMediaVariants>) {
   return (
-    <div
-      data-slot="empty-icon"
-      data-variant={variant}
-      className={cn(emptyMediaVariants({ variant, className }))}
-      {...props}
-    />
+    <Smooth radius={12}>
+      <div
+        data-slot="empty-icon"
+        data-variant={variant}
+        className={cn(emptyMediaVariants({ variant, className }))}
+        {...props}
+      />
+    </Smooth>
   )
 }
 

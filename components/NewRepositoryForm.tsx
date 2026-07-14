@@ -6,7 +6,6 @@ import { Loader2, Plus, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 
 import A from "@/components/A"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -40,18 +39,15 @@ export default function NewRepositoryForm({
     private: false,
   })
   const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!formState.name.trim()) {
       const message = "Repository name is required."
-      setError(message)
       toast.error(message)
       return
     }
 
     setIsCreating(true)
-    setError(null)
 
     const response = await fetch("/api/repositories", {
       body: JSON.stringify({
@@ -86,7 +82,6 @@ export default function NewRepositoryForm({
           : data.error === "validation_failed"
             ? "GitHub rejected this repository setup. The name may already be taken in your account, or one of the values is invalid."
             : "Repository creation failed. Please try again."
-      setError(message)
       toast.error(message)
       return
     }
@@ -247,17 +242,6 @@ export default function NewRepositoryForm({
               </FieldContent>
             </Field>
           </FieldGroup>
-
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="rounded-full">
-              {formState.private ? "Private" : "Public"}
-            </Badge>
-            <Badge variant="outline" className="rounded-full">
-              {formState.autoInit ? "README included" : "Empty repo"}
-            </Badge>
-          </div>
-
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
           <div className="flex justify-end">
             <Button

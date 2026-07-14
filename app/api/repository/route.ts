@@ -19,6 +19,9 @@ export async function PATCH(request: Request) {
     archived?: boolean
     default_branch?: string | null
     description?: string | null
+    has_discussions?: boolean
+    has_downloads?: boolean
+    has_wiki?: boolean
     homepage?: string | null
     name?: string
     owner?: string
@@ -38,6 +41,9 @@ export async function PATCH(request: Request) {
       archived: body.archived,
       default_branch: body.default_branch,
       description: body.description ?? null,
+      has_discussions: body.has_discussions,
+      has_downloads: body.has_downloads,
+      has_wiki: body.has_wiki,
       homepage: body.homepage ?? null,
       name: body.name,
       private: body.private,

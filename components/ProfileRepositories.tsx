@@ -141,6 +141,7 @@ export default function ProfileRepositories({
           forks_count: repo.forks_count,
           full_name: repo.fullName,
           has_discussions: false,
+          has_downloads: true,
           has_wiki: false,
           html_url: repo.url,
           id: repo.id,

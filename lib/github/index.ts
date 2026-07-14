@@ -58,6 +58,7 @@ export type GitHubRepositoryMetadataUpdateInput = {
   default_branch?: string | null
   description?: string | null
   has_discussions?: boolean
+  has_downloads?: boolean
   has_wiki?: boolean
   homepage?: string | null
   name?: string
@@ -89,6 +90,7 @@ export type GitHubRepository = {
   forks_count: number
   full_name?: string
   has_discussions: boolean
+  has_downloads: boolean
   has_wiki: boolean
   homepage?: string | null
   html_url: string
